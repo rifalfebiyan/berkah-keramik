@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String
+  imageUrl      String?
+  subcategories Subcategory[]
+  products      Product[]
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+}
+
+
+model Subcategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  imageUrl   String?
+  category   Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  products   Product[]
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(3)
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  logoUrl   String?
+  products  Product[]
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+}
+
+model Product {
+  id            Int          @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  oldPrice      Float?
+  discount      String?
+  stock         Int          @default(0)
+  sold          Int          @default(0)
+  rating        Float        @default(0)
+  imageUrl      String?
+  brand         Brand        @relation(fields: [brandId], references: [id])
+  brandId       Int
+  category      Category     @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  subcategoryId Int?
+  isFlashSale   Boolean      @default(false)
+  flashSaleEndsAt DateTime?   @db.Timestamptz(3)
+  size          String?
+  color         String?
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user")
+  provider  String   @default("local")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  customer  String
+  phone     String?
+  address   String?
+  total     Float
+  // pending | processing | shipped | completed | cancelled
+  status    String      @default("pending")
+  date      String
+  items     OrderItem[]
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+}
+
+model OrderItem {
+  id           Int    @id @default(autoincrement())
+  order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      Int
+  productName  String
+  pricePerUnit Float
+  quantity     Int
+  total        Float
+}
