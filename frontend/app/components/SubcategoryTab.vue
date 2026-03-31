@@ -55,6 +55,7 @@ onMounted(() => {
       v-for="sub in subcategories"
       :key="sub.id"
       class="group overflow-hidden rounded-2xl shadow hover:shadow-xl transition cursor-pointer"
+      @click="navigateTo('/subcategory/' + sub.id)"
     >
       <!-- Image -->
       <div class="relative h-56 overflow-hidden">

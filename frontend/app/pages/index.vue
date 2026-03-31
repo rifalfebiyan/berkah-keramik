@@ -1,11 +1,11 @@
 <template>
   <div>
     <AppHero />
-    <CatalogSection @selectProduct="handleSelectProduct" />
-    <CategorySection @category-selected="handleCategorySelect" />
-    <FlooringSection @viewAll="handleViewAllFlooring" />
-    <BrandSection @brand-selected="handleBrandSelect" />
-    <StoreInfoSection />
+    <CatalogSection id="promo-section" @selectProduct="handleSelectProduct" />
+    <CategorySection id="category-section" @category-selected="handleCategorySelect" />
+    <FlooringSection id="flooring-section" @viewAll="handleViewAllFlooring" />
+    <BrandSection id="brand-section" @brand-selected="handleBrandSelect" />
+    <StoreInfoSection id="info-section" />
   </div>
 </template>
 

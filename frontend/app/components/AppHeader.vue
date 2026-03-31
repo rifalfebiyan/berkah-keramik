@@ -16,6 +16,15 @@ const userEmail = ref("");
 const userName = ref("");
 const isDropdownOpen = ref(false);
 
+const cartStore = useCartStore();
+const searchQuery = ref("");
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    navigateTo(`/search?q=${encodeURIComponent(searchQuery.value)}`);
+  }
+};
+
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
 };
@@ -78,10 +87,10 @@ const logout = () => {
 };
 
 const navLinks = [
-  { name: "Beranda", href: "#" },
-  { name: "Shop by Brands", href: "#" },
-  { name: "Shop by Rooms", href: "#" },
-  { name: "House Brand Berkah Keramik", href: "#" },
+  { name: "Beranda", href: "/" },
+  { name: "Shop by Brands", href: "#brand-section" },
+  { name: "Shop by Rooms", href: "/flooring" },
+  { name: "House Brand Berkah Keramik", href: "/subcategory/1" },
 ];
 </script>
 
@@ -98,10 +107,10 @@ const navLinks = [
           </div>
         </div>
         <div class="top-links">
-          <a href="#">Membership</a>
-          <a href="#">Tentang Kami</a>
-          <a href="#">Bantuan</a>
-          <div class="info-item">
+          <NuxtLink to="/membership">Membership</NuxtLink>
+          <NuxtLink to="/about">Tentang Kami</NuxtLink>
+          <NuxtLink to="/help">Bantuan</NuxtLink>
+          <div class="info-item cursor-pointer" @click="navigateTo('/locations')">
             <MapPin :size="16" />
             <span>Lokasi Toko</span>
           </div>
@@ -118,10 +127,12 @@ const navLinks = [
 
         <div class="search-container">
           <input
+            v-model="searchQuery"
             type="text"
             placeholder="Cari produk dengan kata kunci, model atau SKU"
+            @keyup.enter="handleSearch"
           />
-          <button class="search-btn">
+          <button class="search-btn" @click="handleSearch">
             <Search :size="20" />
           </button>
         </div>
@@ -144,40 +155,53 @@ const navLinks = [
             </div>
 
             <!-- Dropdown Menu -->
-            <div v-if="isDropdownOpen" class="absolute top-[120%] right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div class="px-4 py-3 border-bottom mb-1 bg-gray-50/50">
-                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Halo,</p>
-                <p class="text-sm font-semibold text-gray-800 truncate">{{ userName }}</p>
+            <div v-if="isDropdownOpen" class="absolute top-[120%] right-0 w-56 bg-white border border-gray-100 rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-50 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div class="px-5 py-4 border-b border-gray-50 mb-1 bg-gray-50/30">
+                <p class="text-[10px] text-blue-600 uppercase tracking-widest font-black mb-0.5">Akses Akun</p>
+                <p class="text-sm font-bold text-gray-900 truncate">{{ userName }}</p>
               </div>
               
-              <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
-                <User :size="16" />
-                <span>Profil Saya</span>
-              </button>
-              <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2">
-                <ShoppingBag :size="16" />
-                <span>Pesanan Saya</span>
-              </button>
-              <div class="h-px bg-gray-100 my-1"></div>
-              <button 
-                @click="logout" 
-                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center gap-2 font-medium"
-              >
-                <span class="rotate-180 inline-block">↩</span> 
-                <span>Keluar dari Akun</span>
-              </button>
+              <div class="p-1">
+                <button @click="navigateTo('/profile')" class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all flex items-center gap-3 font-semibold group">
+                  <div class="p-1.5 bg-gray-50 group-hover:bg-blue-100/50 rounded-lg transition">
+                    <User :size="14" />
+                  </div>
+                  <span>Profil Saya</span>
+                </button>
+                <button @click="navigateTo('/orders')" class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all flex items-center gap-3 font-semibold group">
+                  <div class="p-1.5 bg-gray-50 group-hover:bg-blue-100/50 rounded-lg transition">
+                    <ShoppingBag :size="14" />
+                  </div>
+                  <span>Pesanan Saya</span>
+                </button>
+              </div>
+              <div class="h-px bg-gray-50 my-1 mx-2"></div>
+              <div class="p-1">
+                <button 
+                  @click="logout" 
+                  class="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-all flex items-center gap-3 font-bold group"
+                >
+                  <div class="p-1.5 bg-red-50 group-hover:bg-red-100 rounded-lg transition">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  </div>
+                  <span>Keluar Akun</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="action-item">
+          <div class="action-item" @click="navigateTo('/favorites')">
             <Heart :size="24" />
             <div class="action-text">
               <span class="small-label">Favorit</span>
             </div>
           </div>
 
-          <div class="action-item cart">
+          <div class="action-item cart relative" @click="navigateTo('/cart')">
             <ShoppingBag :size="24" />
+            <span v-if="cartStore.cartCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-[5px] py-[1px] rounded-full">
+              {{ cartStore.cartCount }}
+            </span>
             <div class="action-text">
               <span class="small-label">Keranjang</span>
             </div>
@@ -273,27 +297,50 @@ const navLinks = [
 
 .search-container {
   flex: 1;
-  max-width: 600px;
-  margin: 0 2rem;
+  max-width: 650px;
+  margin: 0 3rem;
   position: relative;
   display: flex;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-container:focus-within {
+  transform: scale(1.02);
 }
 
 .search-container input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e0e0e0;
+  padding: 0.85rem 1.5rem;
+  border: 1.5px solid #edf2f7;
   border-radius: 2rem;
+  background-color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  background-color: white;
+  box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.1), 0 8px 10px -6px rgba(30, 58, 138, 0.05);
 }
 
 .search-btn {
   position: absolute;
-  right: 5px;
+  right: 18px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+
+.search-container:focus-within .search-btn {
+  color: var(--primary-blue);
 }
 
 .header-actions {

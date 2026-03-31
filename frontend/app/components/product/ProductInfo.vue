@@ -22,6 +22,29 @@ const updateQuantity = (val: number) => {
   if (val < 1) return
   quantity.value = val
 }
+
+const cartStore = useCartStore()
+const isAdded = ref(false)
+
+const handleAddToCart = () => {
+  // Parse the price string (e.g. '67.200') to number
+  const priceNum = parseInt(props.product.price.replace(/\D/g, ''), 10) || 0
+  
+  cartStore.addToCart({
+    id: props.product.name, // using name as mock ID
+    name: props.product.name,
+    price: priceNum,
+    image: props.product.variants?.[activeVariant.value]?.image || ''
+  }, quantity.value)
+
+  isAdded.value = true
+  setTimeout(() => isAdded.value = false, 2000)
+}
+
+const handleBuyNow = () => {
+  handleAddToCart()
+  navigateTo('/cart')
+}
 </script>
 
 <template>
@@ -91,11 +114,11 @@ const updateQuantity = (val: number) => {
 
     <!-- Actions -->
     <div class="action-buttons">
-      <button class="btn-secondary">
+      <button class="btn-secondary" @click="handleAddToCart" :disabled="isAdded">
         <ShoppingCart :size="18" />
-        Masukkan Keranjang
+        {{ isAdded ? 'Ditambahkan ✓' : 'Masukkan Keranjang' }}
       </button>
-      <button class="btn-primary">
+      <button class="btn-primary" @click="handleBuyNow">
         Beli Sekarang
       </button>
     </div>

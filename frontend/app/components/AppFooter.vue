@@ -23,20 +23,20 @@ import { Facebook, Twitter, Instagram, Youtube } from 'lucide-vue-next'
         <div class="footer-links">
           <h4>LAYANAN PELANGGAN</h4>
           <ul>
-            <li><a href="#">Bantuan</a></li>
-            <li><a href="#">Kebijakan Pengembalian</a></li>
-            <li><a href="#">Metode Pengiriman</a></li>
-            <li><a href="#">FAQ</a></li>
+            <li><NuxtLink to="/help">Bantuan</NuxtLink></li>
+            <li><NuxtLink to="/help">Kebijakan Pengembalian</NuxtLink></li>
+            <li><NuxtLink to="/help">Metode Pengiriman</NuxtLink></li>
+            <li><NuxtLink to="/help">FAQ</NuxtLink></li>
           </ul>
         </div>
 
         <div class="footer-links">
           <h4>TENTANG KAMI</h4>
           <ul>
-            <li><a href="#">Profil Perusahaan</a></li>
-            <li><a href="#">Hubungi Kami</a></li>
-            <li><a href="#">Lokasi Toko</a></li>
-            <li><a href="#">Karir</a></li>
+            <li><NuxtLink to="/about">Profil Perusahaan</NuxtLink></li>
+            <li><NuxtLink to="/help">Hubungi Kami</NuxtLink></li>
+            <li><NuxtLink to="/locations">Lokasi Toko</NuxtLink></li>
+            <li><NuxtLink to="/about">Karir</NuxtLink></li>
           </ul>
         </div>
       </div>
