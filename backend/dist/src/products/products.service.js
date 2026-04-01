@@ -21,6 +21,7 @@ let ProductsService = class ProductsService {
         return this.prisma.product.findMany({
             where: {
                 categoryId: filters?.categoryId,
+                subcategoryId: filters?.subcategoryId,
                 brandId: filters?.brandId,
                 price: {
                     gte: filters?.minPrice,

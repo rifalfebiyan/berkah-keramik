@@ -13,69 +13,35 @@ const hours   = () => pad(Math.floor(remaining.value / 3600))
 const minutes = () => pad(Math.floor((remaining.value % 3600) / 60))
 const seconds = () => pad(remaining.value % 60)
 
+// ── Products ─────────────────────────────────────────────────────────────
+const config = useRuntimeConfig()
+const products = ref<any[]>([])
+const isLoading = ref(true)
+
+const fetchFlashSaleProducts = async () => {
+  isLoading.value = true
+  try {
+    // We'll fetch all and filter by isFlashSale on the client for now, 
+    // or we could add a query param to the backend if needed.
+    const data = await $fetch<any[]>(`${config.public.apiUrl}/products`)
+    products.value = data.filter(p => p.isFlashSale).slice(0, 5) // Show top 5 flash sales
+  } catch (err) {
+    console.error('Failed to fetch flash sale products:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 onMounted(() => {
+  fetchFlashSaleProducts()
+  
   timer = setInterval(() => {
     if (remaining.value > 0) remaining.value--
   }, 1000)
 })
-onUnmounted(() => clearInterval(timer))
-
-// ── Products ─────────────────────────────────────────────────────────────
-const products = [
-  {
-    name: 'Azzurra Floral Bloom 40×40',
-    brand: 'MULIA',
-    price: 75_000,
-    oldPrice: 115_000,
-    discount: 'Hemat 60%',
-    badgeColor: '#E53935',
-    stock: 5,
-    image: '/fressia_white.jpg',
-  },
-  {
-    name: 'Grani Wood Natural 60×60',
-    brand: 'ROMAN',
-    price: 183_750,
-    oldPrice: 245_000,
-    discount: 'Hemat 25%',
-    badgeColor: '#E53935',
-    stock: 22,
-    image: '/keramik.jpg',
-  },
-  {
-    name: 'Bianco Carrara Marble...',
-    brand: 'NIRO',
-    price: 248_000,
-    oldPrice: 310_000,
-    discount: 'Terlaris',
-    badgeColor: '#00897B',
-    stock: 3,
-    image: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=400&q=80',
-  },
-  {
-    name: 'Midnight Onyx Luxury...',
-    brand: 'ASIA TILE',
-    price: 493_000,
-    oldPrice: 580_000,
-    discount: 'Hot Item',
-    badgeColor: '#E53935',
-    stock: 16,
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-  },
-  {
-    name: 'Travertin Classic 60×60',
-    brand: 'PLATINUM',
-    price: 145_000,
-    oldPrice: 195_000,
-    discount: 'Hemat 25%',
-    badgeColor: '#E53935',
-    stock: 11,
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',
-  },
-]
 
 const fmt = (n: number) =>
-  'Rp ' + n.toLocaleString('id-ID')
+  'Rp ' + (n || 0).toLocaleString('id-ID')
 </script>
 
 <template>
@@ -118,31 +84,44 @@ const fmt = (n: number) =>
       </div>
 
       <!-- ── Product Cards ──────────────────────────────────────── -->
-      <div class="flash-cards">
+      <div v-if="isLoading" class="py-20 text-center text-white/70 col-span-full">
+        <div class="animate-spin w-10 h-10 border-4 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
+        Memuat penawaran spesial...
+      </div>
+      <div v-else-if="products.length === 0" class="py-20 text-center text-white/70 col-span-full">
+        <p class="text-lg font-medium">Belum ada promo spesial saat ini.</p>
+      </div>
+      <div v-else class="flash-cards">
         <div
           v-for="p in products"
-          :key="p.name"
+          :key="p.id"
           class="flash-card"
           @click="emit('selectProduct', p)"
         >
-          <div class="card-img-wrap">
-            <span class="badge" :style="{ backgroundColor: p.badgeColor }">{{ p.discount }}</span>
-            <img :src="p.image" :alt="p.name" class="card-img" />
+          <div class="card-img-wrap flex items-center justify-center bg-gray-800">
+            <span v-if="p.discount" class="badge" style="background-color: #E53935">{{ p.discount }}</span>
+            <img v-if="p.imageUrl" :src="p.imageUrl" :alt="p.name" class="card-img" />
+            <div v-else class="flex flex-col items-center text-gray-500">
+              <svg class="w-10 h-10 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-[8px] font-bold uppercase tracking-wider">No Image</span>
+            </div>
           </div>
           <div class="card-body">
             <p class="card-name">{{ p.name }}</p>
             <div class="card-prices">
               <span class="card-price">{{ fmt(p.price) }}</span>
-              <span class="card-old">{{ fmt(p.oldPrice) }}</span>
+              <span v-if="p.oldPrice" class="card-old">{{ fmt(p.oldPrice) }}</span>
             </div>
             <div class="card-stock">
               <span class="stock-bar-wrap">
                 <span
                   class="stock-bar-fill"
-                  :style="{ width: `${Math.min(100, (p.stock / 30) * 100)}%` }"
+                  :style="{ width: `${Math.min(100, ((p.stock || 10) / 30) * 100)}%` }"
                 />
               </span>
-              <span class="stock-text">{{ p.stock }} unit lagi</span>
+              <span class="stock-text">{{ p.stock || 0 }} unit lagi</span>
             </div>
             <p class="stock-label">STOCK TERBATAS!</p>
           </div>

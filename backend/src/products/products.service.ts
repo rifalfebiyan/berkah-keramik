@@ -5,10 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(filters?: { categoryId?: number; brandId?: number; minPrice?: number; maxPrice?: number }) {
+    async findAll(filters?: { categoryId?: number; subcategoryId?: number; brandId?: number; minPrice?: number; maxPrice?: number }) {
         return this.prisma.product.findMany({
             where: {
                 categoryId: filters?.categoryId,
+                subcategoryId: filters?.subcategoryId,
                 brandId: filters?.brandId,
                 price: {
                     gte: filters?.minPrice,

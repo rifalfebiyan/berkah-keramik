@@ -8,7 +8,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -16,14 +17,13 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
-    findAll(categoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string): Promise<({
+    findAll(categoryId?: string, subcategoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string): Promise<({
         brand: {
             id: number;
             name: string;
@@ -52,7 +52,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -60,12 +61,11 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     })[]>;
     findOne(id: string): Promise<({
         brand: {
@@ -96,7 +96,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -104,12 +105,11 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }) | null>;
     update(id: string, updateProductDto: any): Promise<{
         id: number;
@@ -117,7 +117,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -125,12 +126,11 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
     remove(id: string): Promise<{
         id: number;
@@ -138,7 +138,8 @@ export declare class ProductsController {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -146,11 +147,10 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
 }

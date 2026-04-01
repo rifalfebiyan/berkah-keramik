@@ -17,15 +17,42 @@
 
     <!-- Product Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
-      <div v-for="i in 10" :key="i" class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer group" @click="navigateTo('/product/1')">
-        <div class="aspect-square bg-gray-100 overflow-hidden relative">
-          <img src="https://images.unsplash.com/photo-1517646281694-2226b1445771?auto=format&fit=crop&q=80&w=400" alt="Mock" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
-          <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">TERLARIS</span>
+      <div v-if="isLoading" class="col-span-full py-12 text-center text-gray-400">
+        <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+        Memuat produk...
+      </div>
+      <div v-else-if="products.length === 0" class="col-span-full py-12 text-center">
+        <div class="text-4xl mb-4 text-gray-200">📦</div>
+        <div class="text-gray-400 font-medium">Belum ada produk untuk subkategori ini</div>
+        <NuxtLink to="/" class="text-blue-600 mt-2 inline-block hover:underline">Kembali ke Beranda</NuxtLink>
+      </div>
+      <div 
+        v-else
+        v-for="p in products" 
+        :key="p.id" 
+        class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer group" 
+        @click="navigateTo(`/product/${p.id}`)"
+      >
+        <div class="aspect-square bg-gray-100 overflow-hidden relative flex items-center justify-center">
+          <img 
+            v-if="p.imageUrl"
+            :src="p.imageUrl" 
+            :alt="p.name" 
+            class="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+          />
+          <div v-else class="flex flex-col items-center text-gray-300">
+            <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">No Image</span>
+          </div>
+          <span v-if="p.isFlashSale" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">FLASH SALE</span>
         </div>
         <div class="p-3">
-          <div class="text-[10px] text-gray-500 font-bold mb-1 uppercase">Merek {{ i }}</div>
-          <h3 class="text-sm text-gray-800 line-clamp-2 leading-tight mb-2 group-hover:text-blue-600 transition-colors">Keramik Dinding Pola Menarik Tipe {{ i }}</h3>
-          <div class="text-red-600 font-bold">Rp {{ (45000 + (i * 5000)).toLocaleString('id-ID') }}</div>
+          <div class="text-[10px] text-gray-500 font-bold mb-1 uppercase">{{ p.brand?.name || 'Merek Umum' }}</div>
+          <h3 class="text-sm text-gray-800 line-clamp-2 leading-tight mb-2 group-hover:text-blue-600 transition-colors">{{ p.name }}</h3>
+          <div class="text-red-600 font-bold">Rp {{ p.price.toLocaleString('id-ID') }}</div>
+          <div v-if="p.oldPrice" class="text-[10px] text-gray-400 line-through">Rp {{ p.oldPrice.toLocaleString('id-ID') }}</div>
         </div>
       </div>
     </div>
@@ -34,8 +61,30 @@
 </template>
 
 <script setup>
+import { computed, ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
 const route = useRoute();
+const config = useRuntimeConfig();
 const subcategoryId = computed(() => route.params.id);
+const products = ref([]);
+const isLoading = ref(true);
+
+const fetchProducts = async () => {
+  isLoading.value = true;
+  try {
+    const data = await $fetch(`${config.public.apiUrl}/products?subcategoryId=${subcategoryId.value}`);
+    products.value = data;
+  } catch (err) {
+    console.error('Failed to fetch products:', err);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchProducts();
+});
 </script>
 
 <style scoped>

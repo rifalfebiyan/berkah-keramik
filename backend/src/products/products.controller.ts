@@ -18,12 +18,14 @@ export class ProductsController {
     @Get()
     findAll(
         @Query('categoryId') categoryId?: string,
+        @Query('subcategoryId') subcategoryId?: string,
         @Query('brandId') brandId?: string,
         @Query('minPrice') minPrice?: string,
         @Query('maxPrice') maxPrice?: string,
     ) {
         return this.productsService.findAll({
             categoryId: categoryId ? +categoryId : undefined,
+            subcategoryId: subcategoryId ? +subcategoryId : undefined,
             brandId: brandId ? +brandId : undefined,
             minPrice: minPrice ? +minPrice : undefined,
             maxPrice: maxPrice ? +maxPrice : undefined,

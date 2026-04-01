@@ -25,10 +25,10 @@ const activeTab = computed(() => {
     <AdminSidebar />
 
     <!-- Main Content Area -->
-    <div class="flex-1 ml-64 flex flex-col min-h-screen">
+    <div class="flex-1 ml-64 flex flex-col min-h-screen min-w-0 text-gray-800">
       <AdminHeader :active-tab="activeTab" />
       
-      <main class="flex-1 p-8">
+      <main class="flex-1 p-8 min-w-0">
         <slot />
       </main>
     </div>

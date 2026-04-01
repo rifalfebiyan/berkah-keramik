@@ -339,7 +339,7 @@ onMounted(() => {
       </div>
 
       <!-- Scrollable Table Wrapper -->
-      <div v-else class="overflow-x-auto">
+      <div v-else class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse min-w-[1200px]">
           <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
             <tr>

@@ -200,13 +200,20 @@ onMounted(() => {
 
 <template>
   <div class="category-management">
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-800">Manajemen Kategori</h2>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Manajemen Kategori</h2>
+        <p class="text-sm text-gray-400 mt-1">{{ categories.length }} kategori ditemukan</p>
+      </div>
       <button 
         @click="openAddModal"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-600/20 flex items-center gap-2"
       >
-        + Tambah Kategori
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Kategori
       </button>
     </div>
 
@@ -216,64 +223,74 @@ onMounted(() => {
       <button @click="fetchCategories" class="underline font-semibold">Coba Lagi</button>
     </div>
 
-    <!-- Table -->
+    <!-- Table Card -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div v-if="isLoading" class="p-12 text-center text-gray-400">
         <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
         Memuat data...
       </div>
 
-      <table v-else class="w-full text-left border-collapse">
-        <thead class="bg-gray-50 text-gray-500 text-sm uppercase">
-          <tr>
-            <th class="px-6 py-4 font-semibold">Nomor</th>
-            <th class="px-6 py-4 font-semibold">Gambar</th>
-            <th class="px-6 py-4 font-semibold">Nama Kategori</th>
-            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr v-for="(cat, index) in categories" :key="cat.id" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 text-gray-500 font-medium">{{ index + 1 }}</td>
-            <td class="px-6 py-4">
-              <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                <img v-if="cat.imageUrl" :src="cat.imageUrl" class="w-full h-full object-cover">
-                <span v-else class="text-xs text-gray-400 font-bold">BK</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 font-semibold text-gray-800 text-lg">{{ cat.name }}</td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex justify-end gap-2">
-                <button 
-                  @click="openEditModal(cat)"
-                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
-                  title="Edit"
-                >
-                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button 
-                  @click="openDeleteConfirm(cat.id)"
-                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
-                  title="Hapus"
-                >
-                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="categories.length === 0">
-            <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">
-              Belum ada kategori. Klik "Tambah Kategori" untuk membuat.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      
+      <!-- Scrollable Table Wrapper -->
+      <div v-else class="overflow-x-auto w-full">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+          <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-3 font-semibold w-14">#</th>
+              <th class="px-4 py-3 font-semibold w-16">Gambar</th>
+              <th class="px-4 py-3 font-semibold">Nama Kategori</th>
+              <th class="px-4 py-3 font-semibold text-right whitespace-nowrap sticky right-0 bg-gray-50">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 text-sm">
+            <tr v-for="(cat, index) in categories" :key="cat.id" class="hover:bg-blue-50/30 transition-colors">
+              <td class="px-4 py-3 text-gray-400 font-medium text-xs">{{ index + 1 }}</td>
+              <td class="px-4 py-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img v-if="cat.imageUrl" :src="cat.imageUrl" class="w-full h-full object-cover">
+                  <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">{{ cat.name }}</td>
+              <td class="px-4 py-3 sticky right-0 bg-white">
+                <div class="flex gap-1 justify-end">
+                  <button 
+                    @click="openEditModal(cat)"
+                    class="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg transition-colors"
+                    title="Edit"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button 
+                    @click="openDeleteConfirm(cat.id)"
+                    class="text-red-600 hover:bg-red-100 p-1.5 rounded-lg transition-colors"
+                    title="Hapus"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Empty State -->
+            <tr v-if="categories.length === 0">
+              <td colspan="4" class="px-6 py-16 text-center">
+                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <p class="text-gray-400 font-medium">Belum ada kategori</p>
+                <p class="text-gray-300 text-sm mt-1">Klik "Tambah Kategori" untuk membuat.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Simple Modal Overlay -->

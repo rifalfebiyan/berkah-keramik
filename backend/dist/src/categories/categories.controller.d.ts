@@ -16,7 +16,8 @@ export declare class CategoriesController {
             createdAt: Date;
             updatedAt: Date;
             imageUrl: string | null;
-            flashSaleEndsAt: Date | null;
+            categoryId: number;
+            subcategoryId: number | null;
             description: string | null;
             price: number;
             oldPrice: number | null;
@@ -24,12 +25,11 @@ export declare class CategoriesController {
             stock: number;
             sold: number;
             rating: number;
+            brandId: number;
             isFlashSale: boolean;
+            flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
-            brandId: number;
-            categoryId: number;
-            subcategoryId: number | null;
         }[];
     } & {
         id: number;
@@ -45,7 +45,8 @@ export declare class CategoriesController {
             createdAt: Date;
             updatedAt: Date;
             imageUrl: string | null;
-            flashSaleEndsAt: Date | null;
+            categoryId: number;
+            subcategoryId: number | null;
             description: string | null;
             price: number;
             oldPrice: number | null;
@@ -53,12 +54,11 @@ export declare class CategoriesController {
             stock: number;
             sold: number;
             rating: number;
+            brandId: number;
             isFlashSale: boolean;
+            flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
-            brandId: number;
-            categoryId: number;
-            subcategoryId: number | null;
         }[];
     } & {
         id: number;

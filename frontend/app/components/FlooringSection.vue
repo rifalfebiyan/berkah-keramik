@@ -1,19 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const emit = defineEmits(['viewAll'])
+const config = useRuntimeConfig()
 
-const activeTab = ref('Keramik')
-const categories = ['Keramik', 'Lantai Vinyl', 'Granite Tile', 'Campuran Perekat']
+const activeTabId = ref<number | null>(null)
+const categories = ref<any[]>([])
+const products = ref<any[]>([])
+const isLoading = ref(true)
 
-const products = ref([
-  { id: 1, name: 'MILAN CERAMIC 40X40 FT...', brand: 'MILAN', sold: 55, price: '72.000', image: 'https://images.unsplash.com/photo-1588854337221-4cf9fa96059c?auto=format&fit=crop&q=80&w=400' },
-  { id: 2, name: 'Keramik Dinding HABITAT KW1...', brand: 'HABITAT', sold: 25, price: '120.000', image: 'https://images.unsplash.com/photo-1545173168-9f1947eebb9f?auto=format&fit=crop&q=80&w=400' },
-  { id: 3, name: 'HABITAT CERAMIC 50X50 FT CALINA PIX...', brand: 'HABITAT', sold: 22, price: '110.000', image: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?auto=format&fit=crop&q=80&w=400' },
-  { id: 4, name: 'KIA CERAMIC 50X50 FT HICKORY KW1', brand: 'KIA', sold: 2, price: '89.200', image: 'https://images.unsplash.com/photo-1534237172340-7d25a8a81814?auto=format&fit=crop&q=80&w=400' },
-  { id: 5, name: 'IKAD CERAMIC 40X40 FT SX GALAXY GREY...', brand: 'IKAD', sold: 0, price: '72.000', image: 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?auto=format&fit=crop&q=80&w=400' },
-  { id: 6, name: 'MULIA CERAMIC FRESSIA WHITE 40X40', brand: 'MULIA', sold: 12, price: '65.000', image: 'https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?auto=format&fit=crop&q=80&w=400' },
-])
+const fetchCategories = async () => {
+  try {
+    const data = await $fetch<any[]>(`${config.public.apiUrl}/categories`)
+    categories.value = data
+    if (data.length > 0) {
+      activeTabId.value = data[0].id
+    }
+  } catch (err) {
+    console.error('Failed to fetch categories:', err)
+  }
+}
+
+const fetchProducts = async () => {
+  if (!activeTabId.value) return
+  isLoading.value = true
+  try {
+    const data = await $fetch<any[]>(`${config.public.apiUrl}/products?categoryId=${activeTabId.value}`)
+    products.value = data
+  } catch (err) {
+    console.error('Failed to fetch products:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchCategories()
+  if (activeTabId.value) {
+    await fetchProducts()
+  }
+})
+
+watch(activeTabId, () => {
+  fetchProducts()
+})
 </script>
 
 <template>
@@ -29,24 +59,42 @@ const products = ref([
       <div class="tab-navigation">
         <button 
           v-for="cat in categories" 
-          :key="cat"
-          :class="['tab-btn', { active: activeTab === cat }]"
-          @click="activeTab = cat"
+          :key="cat.id"
+          :class="['tab-btn', { active: activeTabId === cat.id }]"
+          @click="activeTabId = cat.id"
         >
-          {{ cat }}
+          {{ cat.name }}
         </button>
       </div>
 
-      <div class="flooring-grid">
-        <div v-for="p in products" :key="p.id" class="flooring-card">
-          <div class="image-container">
-            <img :src="p.image" :alt="p.name" />
+      <div v-if="isLoading" class="py-12 text-center text-gray-400">
+        <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+        Memuat produk...
+      </div>
+      <div v-else-if="products.length === 0" class="py-12 text-center text-gray-400">
+        <p>Belum ada produk di kategori ini.</p>
+      </div>
+      <div v-else class="flooring-grid">
+        <div 
+          v-for="p in products" 
+          :key="p.id" 
+          class="flooring-card" 
+          @click="navigateTo(`/product/${p.id}`)"
+        >
+          <div class="image-container flex items-center justify-center bg-gray-50">
+            <img v-if="p.imageUrl" :src="p.imageUrl" :alt="p.name" />
+            <div v-else class="flex flex-col items-center text-gray-300">
+              <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-[8px] font-bold uppercase tracking-wider">No Image</span>
+            </div>
           </div>
           <div class="product-details">
-            <div class="brand-name">{{ p.brand }}</div>
+            <div class="brand-name">{{ p.brand?.name || 'Merek Umum' }}</div>
             <h3 class="product-name">{{ p.name }}</h3>
-            <div class="sold-count">Terjual: {{ p.sold }}</div>
-            <div class="product-price">Rp {{ p.price }}</div>
+            <div class="sold-count">Terjual: {{ p.sold || 0 }}</div>
+            <div class="product-price">Rp {{ (p.price || 0).toLocaleString('id-ID') }}</div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ export declare class ProductsService {
     constructor(prisma: PrismaService);
     findAll(filters?: {
         categoryId?: number;
+        subcategoryId?: number;
         brandId?: number;
         minPrice?: number;
         maxPrice?: number;
@@ -36,7 +37,8 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -44,12 +46,11 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     })[]>;
     findOne(id: number): Promise<({
         brand: {
@@ -80,7 +81,8 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -88,12 +90,11 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }) | null>;
     create(data: any): Promise<{
         id: number;
@@ -101,7 +102,8 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -109,12 +111,11 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
     update(id: number, data: any): Promise<{
         id: number;
@@ -122,7 +123,8 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -130,12 +132,11 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
     remove(id: number): Promise<{
         id: number;
@@ -143,7 +144,8 @@ export declare class ProductsService {
         createdAt: Date;
         updatedAt: Date;
         imageUrl: string | null;
-        flashSaleEndsAt: Date | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -151,11 +153,10 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
+        brandId: number;
         isFlashSale: boolean;
+        flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
-        brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
     }>;
 }
