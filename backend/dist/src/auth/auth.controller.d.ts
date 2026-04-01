@@ -11,14 +11,14 @@ export declare class AuthController {
         password: string;
         name: string;
     }): Promise<{
-        email: string;
+        id: number;
         name: string | null;
-        password: string;
-        role: string;
-        provider: string;
         createdAt: Date;
         updatedAt: Date;
-        id: number;
+        email: string;
+        password: string;
+        role: import(".prisma/client").$Enums.Role;
+        provider: string;
     }>;
     loginInfo(): {
         message: string;
@@ -33,7 +33,7 @@ export declare class AuthController {
         name?: undefined;
     } | {
         access_token: string;
-        role: string;
+        role: import(".prisma/client").$Enums.Role;
         name: string | null;
         message?: undefined;
     }>;

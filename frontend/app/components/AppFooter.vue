@@ -8,8 +8,8 @@ import { Facebook, Twitter, Instagram, Youtube } from 'lucide-vue-next'
       <div class="footer-grid">
         <div class="footer-brand">
           <div class="logo">
-            <span class="brand-red">DEPO</span>
-            <span class="brand-blue">BANGUNAN</span>
+            <span class="brand-red">BERKAH</span>
+            <span class="brand-blue">KERAMIK</span>
           </div>
           <p>Supermarket Bahan Bangunan dengan pilihan terlengkap dan harga bersaing.</p>
           <div class="social-links">
@@ -42,7 +42,7 @@ import { Facebook, Twitter, Instagram, Youtube } from 'lucide-vue-next'
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2026 Depo Bangunan. All rights reserved.</p>
+        <p>&copy; 2026 Berkah Keramik. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -50,7 +50,7 @@ import { Facebook, Twitter, Instagram, Youtube } from 'lucide-vue-next'
 
 <style scoped>
 .container {
-  max-width: 1600px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 1rem;
 }

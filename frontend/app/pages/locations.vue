@@ -72,7 +72,7 @@ import { Search, ChevronRight } from 'lucide-vue-next';
 const locations = [
   { name: 'Showroom Pusat Tangerang', city: 'Tangerang', address: 'Jl. Raya Serpong No. 123, Pakulonan, Kec. Serpong, Kota Tangerang Selatan', image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&q=80&w=400' },
   { name: 'Berkah Keramik Bekasi', city: 'Bekasi', address: 'Kawasan Harapan Indah Blok B2 No. 45, Medan Satria, Kota Bekasi', image: 'https://images.unsplash.com/photo-1512411221-83959bc142ab?auto=format&fit=crop&q=80&w=400' },
-  { name: 'Depo Keramik Depok', city: 'Depok', address: 'Jl. Margonda Raya No. 495, Pondok Cina, Beji, Kota Depok', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=400' },
+  { name: 'Berkah Keramik Depok', city: 'Depok', address: 'Jl. Margonda Raya No. 495, Pondok Cina, Beji, Kota Depok', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=400' },
 ];
 </script>
 

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
-import { ArrowRight } from 'lucide-vue-next'
+import { ArrowRight, Image as ImageIcon } from 'lucide-vue-next'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface SubCategory {
@@ -50,34 +50,36 @@ onMounted(() => {
   </div>
 
   <!-- Card Grid -->
-  <div v-if="!isLoading" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div v-if="!isLoading" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
     <Card
       v-for="sub in subcategories"
       :key="sub.id"
-      class="group overflow-hidden rounded-2xl shadow hover:shadow-xl transition cursor-pointer"
+      class="group overflow-hidden rounded-xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
       @click="navigateTo('/subcategory/' + sub.id)"
     >
       <!-- Image -->
-      <div class="relative h-56 overflow-hidden">
+      <div class="relative h-64 overflow-hidden bg-gray-50">
         <img
           v-if="sub.imageUrl"
           :src="sub.imageUrl"
-          class="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+          class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
-        <div class="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
-          NEW
+        <div v-else class="w-full h-full flex items-center justify-center p-8 text-gray-300">
+          <ImageIcon :size="48" />
+        </div>
+        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 rounded-full text-[10px] font-bold text-gray-900 uppercase tracking-widest shadow-sm">
+          Terbaru
         </div>
       </div>
 
       <!-- Content -->
-      <CardContent class="p-5">
-        <h3 class="text-lg font-bold text-gray-900 group-hover:text-red-600 transition">
+      <CardContent class="p-6 text-center">
+        <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition truncate">
           {{ sub.name }}
         </h3>
-        <p class="text-xs text-gray-500 uppercase tracking-wide">Sub Kategori</p>
-        <div class="flex items-center gap-2 text-red-600 font-semibold mt-3 group-hover:gap-3 transition">
-          <span>Lihat Produk</span>
+        <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest font-semibold italic">Lihat Selengkapnya</p>
+        <div class="flex items-center justify-center gap-2 text-blue-600 font-bold mt-4 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all">
+          <span>Kunjungi</span>
           <ArrowRight class="w-4 h-4" />
         </div>
       </CardContent>

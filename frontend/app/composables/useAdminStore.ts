@@ -55,6 +55,7 @@ const _isInitialized = ref(false)
 export function useAdminStore() {
   const config = useRuntimeConfig()
   const apiUrl = config.public.apiUrl
+  const token = useCookie('token')
 
   // ── Computed stats ───────────────────────────────────────────────────────────
   const totalRevenue = computed(() => _orders.value.filter(o => o.status === 'completed').reduce((s, o) => s + o.total, 0))
@@ -116,10 +117,13 @@ export function useAdminStore() {
     try {
       await $fetch(`${apiUrl}/orders/${id}`, {
         method: 'PATCH',
-        body: { status }
+        body: { status },
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
       })
       const idx = _orders.value.findIndex(o => o.id === id)
-      if (idx !== -1) _orders.value[idx].status = status
+      if (idx !== -1) _orders.value[idx]!.status = status
     } catch (err) {
       console.error('Failed to update order status:', err)
     }

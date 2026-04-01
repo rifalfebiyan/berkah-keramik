@@ -2,6 +2,7 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
           email,
           password: hashedPassword,
           name,
+          role: Role.USER, // Explicitly set default
         },
       });
     } catch (error) {
@@ -75,7 +77,7 @@ export class AuthService {
           email: details.email,
           name: `${details.firstName} ${details.lastName}`,
           password: '', // Password empty for SSO users
-          role: 'user', // Default role
+          role: Role.USER, // Default role using Enum
           provider: 'google',
         },
       });

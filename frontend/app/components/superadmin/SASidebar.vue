@@ -1,25 +1,24 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 import {
   LayoutDashboard, Building2, Users, Activity, Settings,
   Crown, Shield, Zap, LogOut,
 } from 'lucide-vue-next'
 import { useSuperAdminStore } from '@/composables/useSuperAdminStore'
 
-type Tab = 'overview' | 'tenants' | 'users' | 'categories' | 'subcategories' | 'logs' | 'settings'
-
-const model  = defineModel<Tab>()
+const route = useRoute()
 const emit   = defineEmits<{ (e: 'logout'): void }>()
 const store  = useSuperAdminStore()
 
 const navItems = [
-  { id: 'overview'  as Tab, label: 'Overview',     icon: LayoutDashboard },
-  { id: 'tenants'   as Tab, label: 'Tenant / Toko', icon: Building2 },
-  { id: 'users'     as Tab, label: 'Kelola Admin',  icon: Users },
-  { id: 'categories' as Tab, label: 'Master Kategori', icon: Shield },
-  { id: 'subcategories' as Tab, label: 'Master Subkategori', icon: Shield },
-  { id: 'logs'      as Tab, label: 'System Log',    icon: Activity },
-  { id: 'settings'  as Tab, label: 'Pengaturan',    icon: Settings },
-] as const
+  { id: 'overview',  label: 'Overview',          href: '/superadmin/overview',      icon: LayoutDashboard },
+  { id: 'tenants',   label: 'Tenant / Toko',     href: '/superadmin/tenants',       icon: Building2 },
+  { id: 'users',     label: 'Kelola Admin',      href: '/superadmin/users',         icon: Users },
+  { id: 'categories', label: 'Master Kategori',   href: '/superadmin/categories',    icon: Shield },
+  { id: 'subcategories', label: 'Master Subkategori', href: '/superadmin/subcategories', icon: Shield },
+  { id: 'logs',      label: 'System Log',        href: '/superadmin/logs',          icon: Activity },
+  { id: 'settings',  label: 'Pengaturan',        href: '/superadmin/settings',      icon: Settings },
+]
 </script>
 
 <template>
@@ -50,20 +49,20 @@ const navItems = [
 
     <!-- Nav -->
     <nav class="flex-1 p-4 space-y-0.5 mt-2">
-      <button
+      <NuxtLink
         v-for="item in navItems"
         :key="item.id"
-        @click="model = item.id"
+        :to="item.href"
         :class="[
           'w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all',
-          model === item.id
+          route.path === item.href
             ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800',
         ]"
       >
         <component :is="item.icon" :size="18" />
         {{ item.label }}
-      </button>
+      </NuxtLink>
     </nav>
 
     <!-- User Info + Logout -->

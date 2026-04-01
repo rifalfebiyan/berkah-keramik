@@ -42,6 +42,9 @@ let SubcategoriesService = class SubcategoriesService {
         });
     }
     async remove(id) {
+        await this.prisma.product.deleteMany({
+            where: { subcategoryId: id },
+        });
         return this.prisma.subcategory.delete({
             where: { id },
         });

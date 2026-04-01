@@ -5,14 +5,14 @@ export declare class AuthService {
     private prisma;
     constructor(jwtService: JwtService, prisma: PrismaService);
     register(email: string, password: string, name: string): Promise<{
-        email: string;
+        id: number;
         name: string | null;
-        password: string;
-        role: string;
-        provider: string;
         createdAt: Date;
         updatedAt: Date;
-        id: number;
+        email: string;
+        password: string;
+        role: import(".prisma/client").$Enums.Role;
+        provider: string;
     }>;
     login(email: string, password: string): Promise<{
         message: string;
@@ -21,13 +21,13 @@ export declare class AuthService {
         name?: undefined;
     } | {
         access_token: string;
-        role: string;
+        role: import(".prisma/client").$Enums.Role;
         name: string | null;
         message?: undefined;
     }>;
     validateGoogleUser(details: any): Promise<{
         access_token: string;
-        role: string;
+        role: import(".prisma/client").$Enums.Role;
         name: string | null;
     }>;
 }

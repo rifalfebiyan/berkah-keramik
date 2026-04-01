@@ -55,6 +55,10 @@ const isUploading = ref(false)
 const error = ref<string | null>(null)
 const filterSize = ref('')
 const filterColor = ref('')
+const token = useCookie('token')
+const isDeleting = ref(false)
+const showDeleteConfirm = ref(false)
+const productToDelete = ref<number | null>(null)
 
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
@@ -228,17 +232,30 @@ const saveProduct = async () => {
   }
 }
 
-const deleteProduct = async (id: number) => {
-  if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return
+const openDeleteConfirm = (id: number) => {
+  productToDelete.value = id
+  showDeleteConfirm.value = true
+}
 
+const confirmDelete = async () => {
+  if (!productToDelete.value) return
+  
+  isDeleting.value = true
   try {
-    await $fetch(`${apiUrl}/products/${id}`, {
-      method: 'DELETE'
+    await $fetch(`${apiUrl}/products/${productToDelete.value}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
     })
+    showDeleteConfirm.value = false
+    productToDelete.value = null
     await fetchProducts()
   } catch (err) {
     console.error('Failed to delete product:', err)
     alert('Gagal menghapus produk.')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -262,10 +279,13 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Filters -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+      <div class="relative group">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
         <input 
           v-model="filterSize"
           type="text"
@@ -273,8 +293,12 @@ onMounted(() => {
           class="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm"
         >
       </div>
-      <div class="relative">
-        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🎨</span>
+      <div class="relative group">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        </span>
         <input 
           v-model="filterColor"
           type="text"
@@ -395,9 +419,12 @@ onMounted(() => {
 <td class="px-6 py-4">
   <span 
     v-if="prod.isFlashSale" 
-    class="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-xs font-bold"
+    class="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-[10px] font-bold flex items-center gap-1 w-fit"
   >
-    ⚡ FLASH
+    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd" />
+    </svg>
+    FLASH
   </span>
   <span v-else class="text-gray-300">-</span>
 </td>
@@ -414,7 +441,12 @@ onMounted(() => {
 
 <!-- Rating -->
 <td class="px-6 py-4">
-  ⭐ {{ prod.rating }}
+  <div class="flex items-center gap-1">
+    <svg class="w-3.5 h-3.5 text-yellow-500 fill-current" viewBox="0 0 20 20">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+    {{ prod.rating }}
+  </div>
 </td>
 
 <!-- Aksi -->
@@ -423,16 +455,22 @@ onMounted(() => {
 
     <button
       @click="openEditModal(prod)"
-      class="text-blue-600 hover:bg-blue-50 p-2 rounded-lg"
+      class="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors group"
+      title="Edit"
     >
-      ✏️
+      <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
     </button>
 
     <button
-      @click="deleteProduct(prod.id)"
-      class="text-red-600 hover:bg-red-50 p-2 rounded-lg"
+      @click="openDeleteConfirm(prod.id)"
+      class="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors group"
+      title="Hapus"
     >
-      🗑️
+      <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
     </button>
 
   </div>
@@ -668,6 +706,19 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <AdminConfirmModal
+      :show="showDeleteConfirm"
+      title="Hapus Produk?"
+      message="Tindakan ini tidak dapat dibatalkan. Produk ini akan dihapus permanen dari katalog."
+      confirm-text="Ya, Hapus"
+      cancel-text="Batal"
+      type="danger"
+      :is-loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 

@@ -35,6 +35,11 @@ export class SubcategoriesService {
   }
 
   async remove(id: number) {
+    // Menghapus semua produk dengan subcategoryId ini terlebih dahulu
+    await this.prisma.product.deleteMany({
+      where: { subcategoryId: id },
+    });
+
     return this.prisma.subcategory.delete({
       where: { id },
     });

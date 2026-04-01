@@ -33,7 +33,7 @@ const deliveryAreas = [
                       <MapPin :size="32" color="#ee2d24" fill="#ee2d24" />
                    </div>
                    <div class="map-card">
-                      <strong>Depo Bangunan Serpong</strong>
+                      <strong>Berkah Keramik Serpong</strong>
                       <span>Jl. Raya Serpong Km.2, Tangerang</span>
                    </div>
                 </div>

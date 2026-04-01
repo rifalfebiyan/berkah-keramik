@@ -101,7 +101,12 @@ const navLinks = [
       <div class="container container-flex">
         <div class="top-info">
           <div class="info-item">
-            <span class="flag-icon">🇮🇩</span>
+            <span class="flag-icon">
+              <svg class="w-4 h-3 rounded-sm shadow-sm" viewBox="0 0 3 2">
+                <rect width="3" height="1" fill="#ee2d24" />
+                <rect width="3" height="1" y="1" fill="#ffffff" />
+              </svg>
+            </span>
             <span>Indonesia</span>
             <ChevronDown :size="20" />
           </div>

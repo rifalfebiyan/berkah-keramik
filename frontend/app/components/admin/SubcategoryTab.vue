@@ -36,6 +36,10 @@ const selectedFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const isUploading = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const isDeleting = ref(false)
+const showDeleteConfirm = ref(false)
+const subcategoryToDelete = ref<number | null>(null)
+const token = useCookie('token')
 
 const fetchSubcategories = async () => {
   isLoading.value = true
@@ -110,7 +114,10 @@ const uploadImageToServer = async (file: File): Promise<string> => {
   
   const response = await $fetch<{ url: string }>(`${apiUrl}/upload`, {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token.value}`
+    }
   })
   
   return response.url
@@ -160,12 +167,18 @@ const saveSubcategory = async () => {
     if (isEditing.value && currentSubcategory.value.id) {
       await $fetch(`${apiUrl}/subcategories/${currentSubcategory.value.id}`, {
         method: 'PATCH',
-        body: payload
+        body: payload,
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
       })
     } else {
       await $fetch(`${apiUrl}/subcategories`, {
         method: 'POST',
-        body: payload
+        body: payload,
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
       })
     }
     
@@ -178,17 +191,30 @@ const saveSubcategory = async () => {
   }
 }
 
-const deleteSubcategory = async (id: number) => {
-  if (!confirm('Apakah Anda yakin ingin menghapus subkategori ini?')) return
+const openDeleteConfirm = (id: number) => {
+  subcategoryToDelete.value = id
+  showDeleteConfirm.value = true
+}
 
+const confirmDelete = async () => {
+  if (!subcategoryToDelete.value) return
+  
+  isDeleting.value = true
   try {
-    await $fetch(`${apiUrl}/subcategories/${id}`, {
-      method: 'DELETE'
+    await $fetch(`${apiUrl}/subcategories/${subcategoryToDelete.value}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
     })
+    showDeleteConfirm.value = false
+    subcategoryToDelete.value = null
     await fetchSubcategories()
   } catch (err) {
     console.error('Failed to delete subcategory:', err)
     alert('Gagal menghapus subkategori.')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -257,17 +283,21 @@ onMounted(async () => {
               <div class="flex justify-end gap-2">
                 <button 
                   @click="openEditModal(sub)"
-                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
                   title="Edit"
                 >
-                  ✏️
+                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </button>
                 <button 
-                  @click="deleteSubcategory(sub.id)"
-                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  @click="openDeleteConfirm(sub.id)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
                   title="Hapus"
                 >
-                  🗑️
+                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </div>
             </td>
@@ -343,7 +373,9 @@ onMounted(async () => {
                 @change="handleFileChange"
                 class="hidden"
               >
-              <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">📁</span>
+              <svg class="w-10 h-10 mb-3 text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
               <span class="text-sm text-gray-500 group-hover:text-blue-600">Klik untuk upload</span>
               <span class="text-xs text-gray-400 mt-1">JPG, PNG • maks 5MB</span>
             </div>
@@ -373,6 +405,19 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <AdminConfirmModal
+      :show="showDeleteConfirm"
+      title="Hapus Subkategori?"
+      message="Tindakan ini tidak dapat dibatalkan. Semua produk di bawah subkategori ini juga akan ikut terhapus."
+      confirm-text="Ya, Hapus"
+      cancel-text="Batal"
+      type="danger"
+      :is-loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 

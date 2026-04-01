@@ -1,9 +1,25 @@
 <template>
-  <div v-if="categoryId">
-    <SubcategoryTab
-      :categoryId="categoryId"
-      @back="goBack"
-    />
+  <div class="bg-gray-50 min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-7xl">
+      <!-- Label Halaman -->
+      <nav class="flex text-sm text-gray-400 mb-6 items-center gap-2 px-2">
+        <NuxtLink to="/" class="hover:text-blue-600">Beranda</NuxtLink>
+        <span>/</span>
+        <span class="text-gray-600 font-medium whitespace-nowrap">Koleksi Kategori</span>
+      </nav>
+
+      <div class="mb-10 px-2">
+        <h1 class="text-3xl font-black text-gray-900 tracking-tight">Katalog Pilihan</h1>
+        <p class="text-gray-500 mt-1">Jelajahi berbagai sub-kategori material bangunan berkualitas tinggi.</p>
+      </div>
+
+      <div v-if="categoryId" class="mt-8">
+        <SubcategoryTab
+          :categoryId="categoryId"
+          @back="goBack"
+        />
+      </div>
+    </div>
   </div>
 </template>
 

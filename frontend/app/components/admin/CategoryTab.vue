@@ -21,6 +21,16 @@ const currentCategory = ref<Partial<Category>>({
   imageUrl: ''
 })
 
+// Image upload state
+const token = useCookie('token')
+const selectedFile = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
+const isUploading = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const isDeleting = ref(false)
+const showDeleteConfirm = ref(false)
+const categoryToDelete = ref<number | null>(null)
+
 const fetchCategories = async () => {
   isLoading.value = true
   error.value = null
@@ -35,15 +45,77 @@ const fetchCategories = async () => {
   }
 }
 
+// 🖼️ Handle file selection
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  
+  if (!file) return
+  
+  // Validasi tipe file
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png']
+  if (!validTypes.includes(file.type)) {
+    alert('Hanya file JPG/PNG yang diperbolehkan!')
+    input.value = ''
+    return
+  }
+  
+  // Validasi ukuran (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Ukuran file maksimal 5MB!')
+    input.value = ''
+    return
+  }
+  
+  selectedFile.value = file
+  
+  // Buat preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+// 🗑️ Clear selected image
+const clearImage = () => {
+  selectedFile.value = null
+  imagePreview.value = null
+  currentCategory.value.imageUrl = ''
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+// 📤 Upload file ke server
+const uploadImageToServer = async (file: File): Promise<string> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('bucket', 'categories') // Custom bucket for categories
+  
+  const response = await $fetch<{ url: string }>(`${apiUrl}/upload`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token.value}`
+    }
+  })
+  
+  return response.url
+}
+
 const openAddModal = () => {
   isEditing.value = false
   currentCategory.value = { name: '', imageUrl: '' }
+  clearImage()
   isModalOpen.value = true
 }
 
 const openEditModal = (cat: Category) => {
   isEditing.value = true
   currentCategory.value = { ...cat }
+  imagePreview.value = cat.imageUrl
+  selectedFile.value = null
   isModalOpen.value = true
 }
 
@@ -51,42 +123,73 @@ const saveCategory = async () => {
   if (!currentCategory.value.name) return
 
   try {
+    let imageUrl = currentCategory.value.imageUrl
+
+    // Jika ada file baru yang diupload
+    if (selectedFile.value) {
+      isUploading.value = true
+      try {
+        imageUrl = await uploadImageToServer(selectedFile.value)
+      } finally {
+        isUploading.value = false
+      }
+    }
+
+    const payload = {
+      name: currentCategory.value.name,
+      imageUrl: imageUrl
+    }
+
     if (isEditing.value && currentCategory.value.id) {
       await $fetch(`${apiUrl}/categories/${currentCategory.value.id}`, {
         method: 'PATCH',
-        body: {
-          name: currentCategory.value.name,
-          imageUrl: currentCategory.value.imageUrl
+        body: payload,
+        headers: {
+          Authorization: `Bearer ${token.value}`
         }
       })
     } else {
       await $fetch(`${apiUrl}/categories`, {
         method: 'POST',
-        body: {
-          name: currentCategory.value.name,
-          imageUrl: currentCategory.value.imageUrl
+        body: payload,
+        headers: {
+          Authorization: `Bearer ${token.value}`
         }
       })
     }
     isModalOpen.value = false
+    clearImage()
     await fetchCategories()
   } catch (err) {
     console.error('Failed to save category:', err)
-    alert('Gagal menyimpan kategori.')
+    alert('Gagal menyimpan kategori. Pastikan Anda memiliki akses admin.')
   }
 }
 
-const deleteCategory = async (id: number) => {
-  if (!confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return
+const openDeleteConfirm = (id: number) => {
+  categoryToDelete.value = id
+  showDeleteConfirm.value = true
+}
 
+const confirmDelete = async () => {
+  if (!categoryToDelete.value) return
+  
+  isDeleting.value = true
   try {
-    await $fetch(`${apiUrl}/categories/${id}`, {
-      method: 'DELETE'
+    await $fetch(`${apiUrl}/categories/${categoryToDelete.value}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
     })
+    showDeleteConfirm.value = false
+    categoryToDelete.value = null
     await fetchCategories()
   } catch (err) {
     console.error('Failed to delete category:', err)
-    alert('Gagal menghapus kategori.')
+    alert('Gagal menghapus kategori. Data ini mungkin masih digunakan oleh produk lain.')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -143,17 +246,21 @@ onMounted(() => {
               <div class="flex justify-end gap-2">
                 <button 
                   @click="openEditModal(cat)"
-                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
                   title="Edit"
                 >
-                  ✏️
+                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </button>
                 <button 
-                  @click="deleteCategory(cat.id)"
-                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  @click="openDeleteConfirm(cat.id)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
                   title="Hapus"
                 >
-                  🗑️
+                  <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </div>
             </td>
@@ -187,14 +294,47 @@ onMounted(() => {
               class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
           </div>
-          <div class="space-y-1">
-            <label class="text-sm font-semibold text-gray-600">URL Gambar (Opsional)</label>
-            <input 
-              v-model="currentCategory.imageUrl" 
-              type="text" 
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          <!-- 🖼️ Upload Gambar -->
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-600">Gambar Kategori (JPG/PNG, maks 5MB)</label>
+            
+            <!-- Preview Image -->
+            <div v-if="imagePreview" class="relative w-full h-48 rounded-xl overflow-hidden border-2 border-dashed border-gray-200">
+              <img :src="imagePreview" class="w-full h-full object-cover">
+              <button 
+                @click="clearImage"
+                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xl hover:bg-red-600 transition-colors shadow-lg"
+                title="Hapus gambar"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <!-- Upload Area -->
+            <div 
+              v-else
+              @click="fileInputRef?.click()"
+              class="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors group"
             >
+              <input 
+                ref="fileInputRef"
+                type="file" 
+                accept=".jpg,.jpeg,.png" 
+                @change="handleFileChange"
+                class="hidden"
+              >
+              <svg class="w-10 h-10 mb-3 text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm text-gray-500 group-hover:text-blue-600 font-medium">Klik untuk upload foto kategori</span>
+              <span class="text-xs text-gray-400 mt-1">JPG, PNG • maks 5MB</span>
+            </div>
+            
+            <!-- Loading Upload -->
+            <div v-if="isUploading" class="text-sm text-blue-600 flex items-center gap-2">
+              <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              Mengupload gambar...
+            </div>
           </div>
         </div>
 
@@ -214,6 +354,19 @@ onMounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <AdminConfirmModal
+      :show="showDeleteConfirm"
+      title="Hapus Kategori?"
+      message="Tindakan ini tidak dapat dibatalkan. Semua subkategori dan produk di bawah kategori ini juga akan ikut terhapus."
+      confirm-text="Ya, Hapus"
+      cancel-text="Batal"
+      type="danger"
+      :is-loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
