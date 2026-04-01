@@ -12,13 +12,13 @@ export declare class AuthController {
         name: string;
     }): Promise<{
         id: number;
-        name: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
+        name: string | null;
         password: string;
         role: import(".prisma/client").$Enums.Role;
         provider: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     loginInfo(): {
         message: string;

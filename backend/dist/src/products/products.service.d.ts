@@ -11,9 +11,9 @@ export declare class ProductsService {
         brand: {
             id: number;
             name: string;
-            logoUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
+            logoUrl: string | null;
         };
         category: {
             id: number;
@@ -55,9 +55,9 @@ export declare class ProductsService {
         brand: {
             id: number;
             name: string;
-            logoUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
+            logoUrl: string | null;
         };
         category: {
             id: number;

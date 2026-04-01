@@ -5,9 +5,9 @@ export declare class BrandsController {
     create(createBrandDto: any): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
     findAll(): Promise<({
         products: {
@@ -34,9 +34,9 @@ export declare class BrandsController {
     } & {
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     })[]>;
     findOne(id: string): Promise<({
         products: {
@@ -63,22 +63,22 @@ export declare class BrandsController {
     } & {
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }) | null>;
     update(id: string, updateBrandDto: any): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
     remove(id: string): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
 }

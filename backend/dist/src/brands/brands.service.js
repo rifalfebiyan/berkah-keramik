@@ -38,6 +38,9 @@ let BrandsService = class BrandsService {
         });
     }
     async remove(id) {
+        await this.prisma.product.deleteMany({
+            where: { brandId: id },
+        });
         return this.prisma.brand.delete({ where: { id } });
     }
 };

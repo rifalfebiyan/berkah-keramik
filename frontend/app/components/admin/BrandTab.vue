@@ -6,7 +6,7 @@ const apiUrl = config.public.apiUrl
 interface Brand {
   id: number
   name: string
-  imageUrl: string | null
+  logoUrl: string | null
 }
 
 const brands = ref<Brand[]>([])
@@ -16,14 +16,19 @@ const error = ref<string | null>(null)
 // Modal state
 const isModalOpen = ref(false)
 const isEditing = ref(false)
-const currentBrand = ref<Partial<Brand>>({
-  name: '',
-  imageUrl: ''
-})
-
 const isDeleting = ref(false)
 const showDeleteConfirm = ref(false)
 const brandToDelete = ref<number | null>(null)
+const currentBrand = ref<Partial<Brand>>({
+  name: '',
+  logoUrl: ''
+})
+
+// Image upload state
+const selectedFile = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
+const isUploading = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const token = useCookie('token')
 
@@ -41,15 +46,77 @@ const fetchBrands = async () => {
   }
 }
 
+// 🖼️ Handle file selection
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  
+  if (!file) return
+  
+  // Validasi tipe file
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png']
+  if (!validTypes.includes(file.type)) {
+    alert('Hanya file JPG/PNG yang diperbolehkan!')
+    input.value = ''
+    return
+  }
+  
+  // Validasi ukuran (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Ukuran file maksimal 5MB!')
+    input.value = ''
+    return
+  }
+  
+  selectedFile.value = file
+  
+  // Buat preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target?.result as string
+    currentBrand.value.logoUrl = imagePreview.value
+  }
+  reader.readAsDataURL(file)
+}
+
+// 🗑️ Clear selected image
+const clearImage = () => {
+  selectedFile.value = null
+  imagePreview.value = null
+  currentBrand.value.logoUrl = ''
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+// 📤 Upload file ke server
+const uploadImageToServer = async (file: File): Promise<string> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  const response = await $fetch<{ url: string }>(`${apiUrl}/upload`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token.value}`
+    }
+  })
+  
+  return response.url
+}
+
 const openAddModal = () => {
   isEditing.value = false
   currentBrand.value = { name: '', imageUrl: '' }
+  clearImage()
   isModalOpen.value = true
 }
 
 const openEditModal = (brand: Brand) => {
   isEditing.value = true
   currentBrand.value = { ...brand }
+  imagePreview.value = brand.imageUrl
+  selectedFile.value = null
   isModalOpen.value = true
 }
 
@@ -57,13 +124,27 @@ const saveBrand = async () => {
   if (!currentBrand.value.name) return
 
   try {
+    let imageUrl = currentBrand.value.imageUrl
+
+    // Jika ada file baru yang diupload, upload ke server dulu
+    if (selectedFile.value) {
+      isUploading.value = true
+      try {
+        imageUrl = await uploadImageToServer(selectedFile.value)
+      } finally {
+        isUploading.value = false
+      }
+    }
+
+    const payload = {
+      name: currentBrand.value.name,
+      logoUrl: imageUrl
+    }
+
     if (isEditing.value && currentBrand.value.id) {
       await $fetch(`${apiUrl}/brands/${currentBrand.value.id}`, {
         method: 'PATCH',
-        body: {
-          name: currentBrand.value.name,
-          imageUrl: currentBrand.value.imageUrl
-        },
+        body: payload,
         headers: {
           Authorization: `Bearer ${token.value}`
         }
@@ -71,20 +152,19 @@ const saveBrand = async () => {
     } else {
       await $fetch(`${apiUrl}/brands`, {
         method: 'POST',
-        body: {
-          name: currentBrand.value.name,
-          imageUrl: currentBrand.value.imageUrl
-        },
+        body: payload,
         headers: {
           Authorization: `Bearer ${token.value}`
         }
       })
     }
     isModalOpen.value = false
+    clearImage()
     await fetchBrands()
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to save brand:', err)
-    alert('Gagal menyimpan brand.')
+    const errorMessage = err.response?._data?.message || err.message || 'Gagal menyimpan brand.'
+    alert(`Error: ${errorMessage}`)
   }
 }
 
@@ -113,6 +193,12 @@ const confirmDelete = async () => {
   } finally {
     isDeleting.value = false
   }
+}
+
+// Close modal & cleanup
+const closeModal = () => {
+  isModalOpen.value = false
+  clearImage()
 }
 
 onMounted(() => {
@@ -159,7 +245,7 @@ onMounted(() => {
             <td class="px-6 py-4 text-gray-500 font-medium">{{ index + 1 }}</td>
             <td class="px-6 py-4">
               <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                <img v-if="brand.imageUrl" :src="brand.imageUrl" class="w-full h-full object-cover">
+                <img v-if="brand.logoUrl" :src="brand.logoUrl" class="w-full h-full object-cover">
                 <span v-else class="text-xs text-gray-400 font-bold">BK</span>
               </div>
             </td>
@@ -198,15 +284,16 @@ onMounted(() => {
       
     </div>
 
-    <!-- Simple Modal Overlay -->
+    <!-- Modal -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
           <h3 class="text-lg font-bold text-gray-800">{{ isEditing ? 'Edit Brand' : 'Tambah Brand Baru' }}</h3>
-          <button @click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
         </div>
         
         <div class="p-6 space-y-4">
+          <!-- Nama Brand -->
           <div class="space-y-1">
             <label class="text-sm font-semibold text-gray-600">Nama Brand</label>
             <input 
@@ -216,29 +303,64 @@ onMounted(() => {
               class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
           </div>
-          <div class="space-y-1">
-            <label class="text-sm font-semibold text-gray-600">URL Gambar (Opsional)</label>
-            <input 
-              v-model="currentBrand.imageUrl" 
-              type="text" 
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          
+          <!-- 🖼️ Upload Gambar -->
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-600">Logo Brand (JPG/PNG, maks 5MB)</label>
+            
+            <!-- Preview Image -->
+            <div v-if="imagePreview" class="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-dashed border-gray-200">
+              <img :src="imagePreview" class="w-full h-full object-cover">
+              <button 
+                @click="clearImage"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors shadow-lg"
+                title="Hapus gambar"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <!-- Upload Area -->
+            <div 
+              v-else
+              @click="fileInputRef?.click()"
+              class="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors group"
             >
+              <input 
+                ref="fileInputRef"
+                type="file" 
+                accept=".jpg,.jpeg,.png" 
+                @change="handleFileChange"
+                class="hidden"
+              >
+              <svg class="w-10 h-10 mb-3 text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm text-gray-500 group-hover:text-blue-600">Klik untuk upload logo</span>
+              <span class="text-xs text-gray-400 mt-1">JPG, PNG • maks 5MB</span>
+            </div>
+            
+            <!-- Loading Upload -->
+            <div v-if="isUploading" class="text-sm text-blue-600 flex items-center gap-2">
+              <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+              Mengupload logo...
+            </div>
           </div>
         </div>
-
+ 
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
           <button 
-            @click="isModalOpen = false"
+            @click="closeModal"
             class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-100 rounded-lg transition-colors"
           >
             Batal
           </button>
           <button 
             @click="saveBrand"
-            class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+            :disabled="isUploading"
+            class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isEditing ? 'Update Brand' : 'Simpan Brand' }}
+            {{ isEditing ? 'Update' : 'Simpan' }}
           </button>
         </div>
       </div>

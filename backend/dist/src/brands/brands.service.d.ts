@@ -27,9 +27,9 @@ export declare class BrandsService {
     } & {
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     })[]>;
     findOne(id: number): Promise<({
         products: {
@@ -56,29 +56,29 @@ export declare class BrandsService {
     } & {
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }) | null>;
     create(data: any): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
     update(id: number, data: any): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
     remove(id: number): Promise<{
         id: number;
         name: string;
-        logoUrl: string | null;
         createdAt: Date;
         updatedAt: Date;
+        logoUrl: string | null;
     }>;
 }

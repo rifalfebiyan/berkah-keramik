@@ -30,6 +30,11 @@ export class BrandsService {
     }
 
     async remove(id: number) {
+        // Menghapus semua produk dengan brandId ini terlebih dahulu
+        await this.prisma.product.deleteMany({
+            where: { brandId: id },
+        });
+
         return this.prisma.brand.delete({ where: { id } });
     }
 }
