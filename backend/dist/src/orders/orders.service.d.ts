@@ -13,14 +13,15 @@ export declare class OrdersService {
         }[];
     } & {
         id: number;
+        phone: string | null;
+        address: string | null;
         createdAt: Date;
         updatedAt: Date;
         customer: string;
-        phone: string | null;
-        address: string | null;
         total: number;
         status: string;
         date: string;
+        userId: number | null;
     })[]>;
     create(data: any): Promise<{
         items: {
@@ -33,13 +34,35 @@ export declare class OrdersService {
         }[];
     } & {
         id: number;
+        phone: string | null;
+        address: string | null;
         createdAt: Date;
         updatedAt: Date;
         customer: string;
-        phone: string | null;
-        address: string | null;
         total: number;
         status: string;
         date: string;
+        userId: number | null;
     }>;
+    findByUserId(userId: number): Promise<({
+        items: {
+            id: number;
+            total: number;
+            productName: string;
+            pricePerUnit: number;
+            quantity: number;
+            orderId: number;
+        }[];
+    } & {
+        id: number;
+        phone: string | null;
+        address: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        customer: string;
+        total: number;
+        status: string;
+        date: string;
+        userId: number | null;
+    })[]>;
 }

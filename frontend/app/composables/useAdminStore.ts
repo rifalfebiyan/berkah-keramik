@@ -72,7 +72,8 @@ export function useAdminStore() {
   // ── Product actions ──────────────────────────────────────────────────────────
   async function fetchProducts() {
     try {
-      const data = await $fetch<Product[]>(`${apiUrl}/products`)
+      const { $api } = useNuxtApp()
+      const data = await $api<Product[]>('/products')
       _products.value = data
     } catch (err) {
       console.error('Failed to fetch products:', err)
@@ -80,8 +81,6 @@ export function useAdminStore() {
   }
 
   async function deductStock(productId: number, qty: number) {
-    // Backend handles this in the order creation transaction, 
-    // but we update local state for immediate feedback
     const product = _products.value.find(p => p.id === productId)
     if (product) {
       product.stock -= qty
@@ -92,7 +91,8 @@ export function useAdminStore() {
   // ── Order actions ────────────────────────────────────────────────────────────
   async function fetchOrders() {
     try {
-      const data = await $fetch<Order[]>(`${apiUrl}/orders`)
+      const { $api } = useNuxtApp()
+      const data = await $api<Order[]>('/orders')
       _orders.value = data
     } catch (err) {
       console.error('Failed to fetch orders:', err)
@@ -101,7 +101,8 @@ export function useAdminStore() {
 
   async function addOrder(orderData: Omit<Order, 'id'>) {
     try {
-      const newOrder = await $fetch<Order>(`${apiUrl}/orders`, {
+      const { $api } = useNuxtApp()
+      const newOrder = await $api<Order>('/orders', {
         method: 'POST',
         body: orderData
       })
@@ -115,12 +116,10 @@ export function useAdminStore() {
 
   async function updateOrderStatus(id: number, status: OrderStatus) {
     try {
-      await $fetch(`${apiUrl}/orders/${id}`, {
+      const { $api } = useNuxtApp()
+      await $api(`/orders/${id}`, {
         method: 'PATCH',
-        body: { status },
-        headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+        body: { status }
       })
       const idx = _orders.value.findIndex(o => o.id === id)
       if (idx !== -1) _orders.value[idx]!.status = status

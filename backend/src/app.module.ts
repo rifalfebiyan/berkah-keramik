@@ -8,6 +8,7 @@ import { BrandsModule } from './brands/brands.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
 import { OrdersModule } from './orders/orders.module';
+import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -21,7 +22,8 @@ import { AppService } from './app.service';
     BrandsModule, 
     PrismaModule, 
     StorageModule,
-    OrdersModule
+    OrdersModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,6 +18,19 @@ let ProductsService = class ProductsService {
         this.prisma = prisma;
     }
     async findAll(filters) {
+        let orderBy = { createdAt: 'desc' };
+        if (filters?.sort === 'price_asc') {
+            orderBy = { price: 'asc' };
+        }
+        else if (filters?.sort === 'price_desc') {
+            orderBy = { price: 'desc' };
+        }
+        else if (filters?.sort === 'relevance') {
+            orderBy = { id: 'desc' };
+        }
+        else if (filters?.sort === 'latest') {
+            orderBy = { createdAt: 'desc' };
+        }
         return this.prisma.product.findMany({
             where: {
                 categoryId: filters?.categoryId,
@@ -27,9 +40,13 @@ let ProductsService = class ProductsService {
                     gte: filters?.minPrice,
                     lte: filters?.maxPrice,
                 },
+                OR: filters?.search ? [
+                    { name: { contains: filters.search, mode: 'insensitive' } },
+                    { description: { contains: filters.search, mode: 'insensitive' } },
+                ] : undefined,
             },
             include: { category: true, brand: true, subcategory: true },
-            orderBy: { createdAt: 'desc' },
+            orderBy,
         });
     }
     async findOne(id) {

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const orders_service_1 = require("./orders.service");
+const passport_1 = require("@nestjs/passport");
 let OrdersController = class OrdersController {
     ordersService;
     constructor(ordersService) {
@@ -25,6 +26,10 @@ let OrdersController = class OrdersController {
     }
     findAll() {
         return this.ordersService.findAll();
+    }
+    getMyOrders(req) {
+        const userId = req.user.id;
+        return this.ordersService.findByUserId(userId);
     }
 };
 exports.OrdersController = OrdersController;
@@ -41,6 +46,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    (0, common_1.Get)('my-orders'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "getMyOrders", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

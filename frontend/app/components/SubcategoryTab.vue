@@ -5,6 +5,10 @@ const apiUrl = config.public.apiUrl
 import { ArrowRight, Image as ImageIcon } from 'lucide-vue-next'
 import { Card, CardContent } from '@/components/ui/card'
 
+const props = defineProps<{
+  categoryId?: number
+}>()
+
 interface SubCategory {
   id: number
   name: string
@@ -19,9 +23,11 @@ const fetchSubcategories = async () => {
   isLoading.value = true
   error.value = null
   try {
-    const data = await $fetch<SubCategory[]>(
-      `${apiUrl}/subcategories`
-    )
+    const url = props.categoryId 
+      ? `${apiUrl}/subcategories?categoryId=${props.categoryId}`
+      : `${apiUrl}/subcategories`
+      
+    const data = await $fetch<SubCategory[]>(url)
     subcategories.value = data
   } catch (err) {
     console.error('Failed to fetch subcategories:', err)

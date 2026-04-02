@@ -10,26 +10,37 @@ export interface CartItem {
 
 // Singleton state
 const _cartItems = ref<CartItem[]>([])
-let _isInitialized = false
+const _currentUserEmail = ref<string | null>(null)
 
 export function useCartStore() {
-  // Load from localStorage only once on client side
-  if (!_isInitialized && typeof window !== 'undefined') {
-    const saved = localStorage.getItem('user_cart')
+  const getStorageKey = () => {
+    return _currentUserEmail.value ? `user_cart_${_currentUserEmail.value}` : 'guest_cart'
+  }
+
+  // Load from localStorage for specific user
+  const initializeCart = (email: string | null) => {
+    if (typeof window === 'undefined') return
+    
+    _currentUserEmail.value = email
+    const key = getStorageKey()
+    const saved = localStorage.getItem(key)
+    
     if (saved) {
       try {
         _cartItems.value = JSON.parse(saved)
       } catch (e) {
         console.error('Failed to parse cart data', e)
+        _cartItems.value = []
       }
+    } else {
+      _cartItems.value = []
     }
-    _isInitialized = true
   }
 
   // Save to localStorage whenever cart changes
   const saveCart = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('user_cart', JSON.stringify(_cartItems.value))
+      localStorage.setItem(getStorageKey(), JSON.stringify(_cartItems.value))
     }
   }
 
@@ -69,6 +80,11 @@ export function useCartStore() {
   }
 
   function clearCart() {
+    // If logging out, we also clear the storage for the current key
+    if (typeof window !== 'undefined') {
+       // Optionally remove the item entirely from localStorage instead of just setting []
+       // localStorage.removeItem(getStorageKey())
+    }
     _cartItems.value = []
     saveCart()
   }
@@ -80,6 +96,7 @@ export function useCartStore() {
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart
+    clearCart,
+    initializeCart
   }
 }

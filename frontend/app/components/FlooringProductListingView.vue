@@ -1,316 +1,358 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { ChevronDown, Star, ChevronRight, X } from 'lucide-vue-next'
+
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
-
 const emit = defineEmits(['back'])
 
 const activeFilters = ref({
-  priceRange: [0, 500000],
-  brands: [] as string[],
-  stock: 'all',
-  colors: [] as string[],
-  sizes: [] as string[],
-  types: [] as string[],
-  textures: [] as string[],
-  qualities: [] as string[]
+  priceRange: [0, 1000000],
+  brands: [] as string[]
 })
 
 const products = ref<any[]>([])
+const brandList = ref<string[]>([])
+const isLoading = ref(true)
 
-const fetchProducts = async () => {
+const fetchBrands = async () => {
   try {
-    const data = await $fetch<any[]>(`${apiUrl}/products`)
-    products.value = data
+    const data = await $fetch<any[]>(`${apiUrl}/brands`)
+    brandList.value = data.map(b => b.name.toUpperCase())
   } catch (err) {
-    console.error('Failed to fetch products:', err)
+    console.error('Failed to fetch brands:', err)
   }
 }
 
-onMounted(() => {
-  fetchProducts()
+const fetchProducts = async () => {
+  isLoading.value = true
+  try {
+    // Assuming Flooring is categoryId 1 based on backend research
+    const data = await $fetch<any[]>(`${apiUrl}/products?categoryId=1`)
+    products.value = data
+    
+    // Update price range max based on actual products
+    if (data.length > 0) {
+      const maxP = Math.max(...data.map(p => p.price))
+      activeFilters.value.priceRange[1] = Math.ceil(maxP / 10000) * 10000
+    }
+  } catch (err) {
+    console.error('Failed to fetch products:', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const maxPriceVal = computed(() => {
+  if (products.value.length === 0) return 1000000
+  const max = Math.max(...products.value.map(p => p.price))
+  return Math.ceil(max / 10000) * 10000
 })
 
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
-    // Basic filtering logic (to be expanded)
-    const brandMatch = activeFilters.value.brands.length === 0 || activeFilters.value.brands.includes(p.brand)
-    const stockMatch = activeFilters.value.stock === 'all' || (activeFilters.value.stock === 'ready' && p.stock > 0)
-    return brandMatch && stockMatch
+    const brandMatch = activeFilters.value.brands.length === 0 || 
+                      activeFilters.value.brands.includes(p.brand?.name?.toUpperCase() || '')
+    const priceMatch = p.price >= activeFilters.value.priceRange[0] && 
+                      p.price <= activeFilters.value.priceRange[1]
+    return brandMatch && priceMatch
   })
 })
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('id-ID').format(price)
+  return new Intl.NumberFormat('id-ID').format(Math.round(price))
 }
+
+onMounted(async () => {
+  await Promise.all([fetchBrands(), fetchProducts()])
+})
 </script>
 
 <template>
-  <div class="flooring-listing-view">
-    <!-- Breadcrumbs -->
-    <div class="breadcrumb-nav">
-      <div class="container">
-        <div class="breadcrumb-items">
-          <button @click="emit('back')" class="back-btn"> Kembali</button>
-          <span>|</span>
-          <a href="#" @click.prevent="emit('back')">Beranda</a>
-          <span>/</span>
-          <a href="#" @click.prevent>ALL CATEGORIES</a>
-          <span>/</span>
-          <span class="active">Flooring</span>
-        </div>
-      </div>
-    </div>
-
+  <div class="brand-list-view">
     <div class="container main-layout">
-      <!-- Sidebar Filters -->
+      <!-- Sidebar -->
       <aside class="sidebar">
-        <h2 class="filter-title">FILTER</h2>
-        
-        <!-- Price Filter -->
-        <div class="filter-group">
-          <h3>HARGA</h3>
-          <div class="price-inputs">
-            <input type="text" placeholder="Harga Minimum">
-            <input type="text" placeholder="Harga Maksimum">
-          </div>
-        </div>
-
-        <!-- Brand Filter -->
-        <div class="filter-group">
-          <h3>MERK BRAND</h3>
-          <div class="checkbox-list">
-            <label v-for="brand in ['SIGNATURE', 'IKAD', 'PLATINUM', 'HABITAT', 'MILAN', 'DBS']" :key="brand">
-              <input type="checkbox" :value="brand" v-model="activeFilters.brands">
-              {{ brand }}
-            </label>
-          </div>
-        </div>
-
-        <!-- Stock Filter -->
-        <div class="filter-group">
-          <h3>STOK</h3>
-          <div class="radio-list">
-            <label><input type="radio" value="all" v-model="activeFilters.stock"> Semua Stok</label>
-            <label><input type="radio" value="ready" v-model="activeFilters.stock"> Ready Stock</label>
-          </div>
-        </div>
-
-        <!-- More filters (collapsed for now) -->
-        <div class="filter-group" v-for="title in ['WARNA', 'UKURAN KERAMIK', 'JENIS KERAMIK', 'TEKSTUR KERAMIK', 'KUALITAS KERAMIK']" :key="title">
+        <div class="filter-section">
           <div class="filter-header">
-            <h3>{{ title }}</h3>
-            <span>+</span>
+            <span>Price</span>
+            <ChevronDown :size="16" />
+          </div>
+          <div class="filter-content">
+             <div class="price-inputs">
+               <div class="range-info">IDR 0</div>
+               <div class="range-info">IDR {{ formatPrice(activeFilters.priceRange[1]) }}</div>
+             </div>
+             <input 
+               type="range" 
+               min="0" 
+               :max="maxPriceVal" 
+               step="10000" 
+               v-model="activeFilters.priceRange[1]" 
+               class="slider" 
+             />
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-header">
+            <span>Merek Brand</span>
+            <ChevronDown :size="16" />
+          </div>
+          <div class="filter-content brand-list">
+            <div v-for="b in brandList" :key="b" class="brand-item">
+              <input type="checkbox" :id="b" :value="b" v-model="activeFilters.brands" />
+              <label :for="b">{{ b }}</label>
+            </div>
+            <div v-if="brandList.length === 0" class="text-[10px] text-gray-400">
+              Memuat merek...
+            </div>
           </div>
         </div>
       </aside>
 
       <!-- Content Area -->
-      <div class="content">
-        <h1 class="page-title">PRODUCT FLOORING</h1>
-        
-        <div class="product-grid">
-          <div 
-            v-for="p in filteredProducts" 
-            :key="p.id" 
-            class="product-card"
-            :class="{ 'flash-sale-border': p.isFlashSale }"
-          >
-            <div class="card-image">
-              <img :src="p.imageUrl || p.image" :alt="p.name">
-              
-              <!-- Flash Sale Badge -->
-              <div v-if="p.isFlashSale" class="flash-sale-badge">
-                <span class="bolt">⚡</span>
-                <FlashSaleTimer :endsAt="p.flashSaleEndsAt" />
-              </div>
-            </div>
-            <div class="card-info">
-              <h3 class="product-name">{{ p.name }}</h3>
-              <div class="stats">
-                <span>Terjual: {{ p.sold }}</span>
-              </div>
-              <div class="price-wrapper">
-                <div class="price">Rp {{ formatPrice(p.price) }}</div>
-                <div v-if="p.oldPrice" class="old-price">Rp {{ formatPrice(p.oldPrice) }}</div>
-              </div>
+      <main class="content-area">
+        <div class="content-header">
+          <div class="header-left">
+            <button class="btn-back" @click="emit('back')">
+              <ChevronRight :size="18" style="transform: rotate(180deg)" />
+              Kembali
+            </button>
+            <div class="results-count">{{ filteredProducts.length }} Produk</div>
+          </div>
+          <div class="sort-options">
+            <span>Urutkan dari</span>
+            <div class="sort-dropdown">
+              Most Relevance <ChevronDown :size="14" />
             </div>
           </div>
         </div>
 
-        <div v-if="filteredProducts.length === 0" class="no-results">
+        <div v-if="isLoading" class="py-20 text-center">
+          <div class="animate-spin w-8 h-8 border-4 border-gray-200 border-t-primary-blue rounded-full mx-auto mb-4"></div>
+          <p class="text-gray-400 text-sm">Memuat produk flooring...</p>
+        </div>
+
+        <div v-else-if="filteredProducts.length === 0" class="no-results">
           Tidak ada produk yang sesuai dengan filter.
         </div>
-      </div>
+
+        <div v-else class="product-grid">
+          <div v-for="p in filteredProducts" :key="p.id" class="mitra10-card" @click="navigateTo(`/product/${p.id}`)">
+            <div class="card-brand-logo">
+               <img v-if="p.brand?.logoUrl" :src="p.brand.logoUrl" :alt="p.brand.name" class="p-brand-logo-img" />
+               <div class="p-brand-logo-text">{{ p.brand?.name || 'GENERIC' }}</div>
+            </div>
+            
+            <div class="p-image-box">
+              <img :src="p.imageUrl || p.image" :alt="p.name" />
+            </div>
+
+            <div class="p-info">
+              <div class="price-row">
+                <span v-if="p.oldPrice" class="old-price">IDR {{ formatPrice(p.oldPrice) }}</span>
+                <span v-if="p.discount" class="discount-label">{{ p.discount }}%</span>
+              </div>
+              <div class="main-price">IDR {{ formatPrice(p.price) }}</div>
+              <h4 class="p-name">{{ p.name }}</h4>
+              
+              <div class="card-stats">
+                <div class="stars">
+                  <Star v-for="i in 5" :key="i" :size="12" fill="#ffcc00" color="#ffcc00" />
+                  <span class="rating-val">{{ p.rating || 5 }}</span>
+                </div>
+                <span class="sold-text">{{ p.sold || 0 }} Terjual</span>
+              </div>
+            </div>
+            
+            <button class="favorite-heart" @click.stop>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 </template>
 
 <style scoped>
-.flooring-listing-view {
-  background-color: #f8fafc;
+.brand-list-view {
+  background-color: white;
+  padding: 2rem 0;
   min-height: 100vh;
-  padding-bottom: 4rem;
-}
-
-.breadcrumb-nav {
-  background: white;
-  padding: 1rem 0;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 2rem;
-}
-
-.breadcrumb-items {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  color: #64748b;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.breadcrumb-items a {
-  text-decoration: none;
-  color: inherit;
-  font-weight: 600;
-}
-
-.breadcrumb-items .active {
-  color: var(--primary-red);
-  font-weight: 700;
 }
 
 .main-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 2rem;
 }
 
+/* Sidebar Styling */
 .sidebar {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  height: fit-content;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border-right: 1px solid #f1f5f9;
+  padding-right: 1.5rem;
 }
 
-.filter-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.filter-group {
-  margin-bottom: 1.5rem;
-}
-
-.filter-group h3 {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 1rem;
+.filter-section {
+  margin-bottom: 2rem;
 }
 
 .filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
   cursor: pointer;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f1f5f9;
 }
 
 .price-inputs {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
-.price-inputs input {
+.slider {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  accent-color: var(--primary-blue);
 }
 
-.checkbox-list, .radio-list {
+.brand-list {
+  max-height: 400px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.checkbox-list label, .radio-list label {
-  font-size: 0.875rem;
+.brand-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.brand-item input {
+  accent-color: var(--primary-blue);
+}
+
+/* Content Area */
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
   cursor: pointer;
-  color: #475569;
+  transition: all 0.2s;
 }
 
-.content {
+.btn-back:hover {
+  background: #f8fafc;
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.results-count {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.sort-options {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
 }
 
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  text-align: center;
-  position: relative;
-  padding-bottom: 1rem;
-}
-
-.page-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background-color: var(--primary-red);
+.sort-dropdown {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 500;
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
 }
 
-.product-card {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 0.75rem;
+/* Mitra10 Style Card */
+.mitra10-card {
+  border: 1px solid #f1f5f9;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  position: relative;
   transition: all 0.3s;
   cursor: pointer;
-  border: 1px solid white;
+  background: white;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1);
+.mitra10-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
   border-color: #e2e8f0;
 }
 
-.card-image {
+.card-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.p-brand-logo-img {
+  max-width: 60px;
+  max-height: 20px;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+.p-brand-logo-text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.p-image-box {
   aspect-ratio: 1;
-  background-color: #f8fafc;
-  border-radius: 0.5rem;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -318,40 +360,27 @@ const formatPrice = (price: number) => {
   overflow: hidden;
 }
 
-.card-image img {
+.p-image-box img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  transition: transform 0.5s;
 }
 
-.card-info {
+.mitra10-card:hover .p-image-box img {
+  transform: scale(1.05);
+}
+
+.p-info {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.product-name {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #334155;
-  height: 2.2rem;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  line-height: 1.2;
-}
-
-.stats {
-  font-size: 0.7rem;
-  color: #64748b;
-  margin: 0.25rem 0;
-}
-
-.price {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #dc2626;
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .old-price {
@@ -360,34 +389,78 @@ const formatPrice = (price: number) => {
   text-decoration: line-through;
 }
 
-.flash-sale-badge {
-  position: absolute;
-  bottom: 0px;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to right, #dc2626, #f97316);
-  padding: 4px 8px;
+.discount-label {
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 1rem;
+}
+
+.main-price {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #236d90;
+}
+
+.p-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0.5rem 0;
+  line-height: 1.4;
+  height: 2.8rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.stars {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  z-index: 10;
+  gap: 2px;
 }
 
-.bolt {
-  color: #fbbf24;
-  font-size: 0.9rem;
-  animation: pulse 1s infinite;
+.rating-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 4px;
 }
 
-.flash-sale-border {
-  border-color: #fca5a5 !important;
-  background: #fffafa !important;
+.sold-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+.favorite-heart {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s;
+}
+
+.favorite-heart:hover {
+  color: #f87171;
+}
+
+.favorite-heart svg {
+  width: 20px;
+  height: 20px;
 }
 
 .no-results {
@@ -397,17 +470,12 @@ const formatPrice = (price: number) => {
   font-weight: 600;
 }
 
-@media (max-width: 1280px) {
-  .product-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
 @media (max-width: 1024px) {
   .main-layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
-  .product-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 640px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
 </style>

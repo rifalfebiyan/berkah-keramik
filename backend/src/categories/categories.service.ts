@@ -14,7 +14,10 @@ export class CategoriesService {
     async findOne(id: number) {
         return this.prisma.category.findUnique({
             where: { id },
-            include: { products: true },
+            include: { 
+                products: true,
+                subcategories: true 
+            },
         });
     }
 

@@ -28,7 +28,7 @@ let OrdersService = class OrdersService {
         });
     }
     async create(data) {
-        const { customer, phone, address, total, status, date, items } = data;
+        const { userId, customer, phone, address, total, status, date, items } = data;
         return this.prisma.$transaction(async (tx) => {
             const order = await tx.order.create({
                 data: {
@@ -38,6 +38,7 @@ let OrdersService = class OrdersService {
                     total,
                     status,
                     date,
+                    userId,
                     items: {
                         create: items.map((item) => ({
                             productName: item.productName,
@@ -67,6 +68,17 @@ let OrdersService = class OrdersService {
                 }
             }
             return order;
+        });
+    }
+    async findByUserId(userId) {
+        return this.prisma.order.findMany({
+            where: { userId },
+            include: {
+                items: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
     }
 };

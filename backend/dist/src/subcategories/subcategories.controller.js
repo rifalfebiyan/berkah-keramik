@@ -30,8 +30,8 @@ let SubcategoriesController = class SubcategoriesController {
             category: { connect: { id: +categoryId } }
         });
     }
-    findAll() {
-        return this.subcategoriesService.findAll();
+    findAll(categoryId) {
+        return this.subcategoriesService.findAll(categoryId ? +categoryId : undefined);
     }
     findOne(id) {
         return this.subcategoriesService.findOne(+id);
@@ -60,8 +60,9 @@ __decorate([
 ], SubcategoriesController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('categoryId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], SubcategoriesController.prototype, "findAll", null);
 __decorate([

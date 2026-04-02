@@ -23,6 +23,7 @@ export declare class CategoriesService {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
         }[];
     } & {
         id: number;
@@ -52,6 +53,15 @@ export declare class CategoriesService {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
+        }[];
+        subcategories: {
+            id: number;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            imageUrl: string | null;
+            categoryId: number;
         }[];
     } & {
         id: number;

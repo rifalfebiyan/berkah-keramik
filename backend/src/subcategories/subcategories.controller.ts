@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { SubcategoriesService } from './subcategories.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -21,8 +21,8 @@ export class SubcategoriesController {
   }
 
   @Get()
-  findAll() {
-    return this.subcategoriesService.findAll();
+  findAll(@Query('categoryId') categoryId?: string) {
+    return this.subcategoriesService.findAll(categoryId ? +categoryId : undefined);
   }
 
   @Get(':id')

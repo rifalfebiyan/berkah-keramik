@@ -26,13 +26,15 @@ let ProductsController = class ProductsController {
     create(createProductDto) {
         return this.productsService.create(createProductDto);
     }
-    findAll(categoryId, subcategoryId, brandId, minPrice, maxPrice) {
+    findAll(categoryId, subcategoryId, brandId, minPrice, maxPrice, search, sort) {
         return this.productsService.findAll({
             categoryId: categoryId ? +categoryId : undefined,
             subcategoryId: subcategoryId ? +subcategoryId : undefined,
             brandId: brandId ? +brandId : undefined,
             minPrice: minPrice ? +minPrice : undefined,
             maxPrice: maxPrice ? +maxPrice : undefined,
+            search,
+            sort,
         });
     }
     findOne(id) {
@@ -62,8 +64,10 @@ __decorate([
     __param(2, (0, common_1.Query)('brandId')),
     __param(3, (0, common_1.Query)('minPrice')),
     __param(4, (0, common_1.Query)('maxPrice')),
+    __param(5, (0, common_1.Query)('search')),
+    __param(6, (0, common_1.Query)('sort')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findAll", null);
 __decorate([

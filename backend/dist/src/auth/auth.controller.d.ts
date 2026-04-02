@@ -15,10 +15,12 @@ export declare class AuthController {
         email: string;
         name: string | null;
         password: string;
-        role: import(".prisma/client").$Enums.Role;
+        phone: string | null;
+        address: string | null;
         provider: string;
         createdAt: Date;
         updatedAt: Date;
+        role: import(".prisma/client").$Enums.Role;
     }>;
     loginInfo(): {
         message: string;

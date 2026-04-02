@@ -8,6 +8,8 @@ export declare class ProductsService {
         brandId?: number;
         minPrice?: number;
         maxPrice?: number;
+        search?: string;
+        sort?: string;
     }): Promise<({
         brand: {
             id: number;
@@ -51,6 +53,7 @@ export declare class ProductsService {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     })[]>;
     findOne(id: number): Promise<({
         brand: {
@@ -95,6 +98,7 @@ export declare class ProductsService {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }) | null>;
     create(data: any): Promise<{
         id: number;
@@ -116,6 +120,7 @@ export declare class ProductsService {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
     update(id: number, data: any): Promise<{
         id: number;
@@ -137,6 +142,7 @@ export declare class ProductsService {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
     remove(id: number): Promise<{
         id: number;
@@ -158,5 +164,6 @@ export declare class ProductsService {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
 }

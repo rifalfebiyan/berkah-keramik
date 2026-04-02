@@ -105,7 +105,8 @@ const fetchProducts = async () => {
   isLoading.value = true
   error.value = null
   try {
-    const data = await $fetch<Product[]>(`${apiUrl}/products`)
+    const { $api } = useNuxtApp()
+    const data = await $api<Product[]>('/products')
     products.value = data
   } catch (err) {
     console.error('Failed to fetch products:', err)
@@ -117,7 +118,8 @@ const fetchProducts = async () => {
 
 const fetchCategories = async () => {
   try {
-    const data = await $fetch<Category[]>(`${apiUrl}/categories`)
+    const { $api } = useNuxtApp()
+    const data = await $api<Category[]>('/categories')
     categories.value = data
   } catch (err) {
     console.error('Failed to fetch categories:', err)
@@ -126,7 +128,8 @@ const fetchCategories = async () => {
 
 const fetchSubcategories = async () => {
   try {
-    const data = await $fetch<Subcategory[]>(`${apiUrl}/subcategories`)
+    const { $api } = useNuxtApp()
+    const data = await $api<Subcategory[]>('/subcategories')
     subcategories.value = data
   } catch (err) {
     console.error('Failed to fetch subcategories:', err)
@@ -135,7 +138,8 @@ const fetchSubcategories = async () => {
 
 const fetchBrands = async () => {
   try {
-    const data = await $fetch<Brand[]>(`${apiUrl}/brands`)
+    const { $api } = useNuxtApp()
+    const data = await $api<Brand[]>('/brands')
     brands.value = data
   } catch (err) {
     console.error('Failed to fetch brands:', err)
@@ -163,12 +167,10 @@ const handleFileUpload = async (event: Event) => {
   formData.append('bucket', 'products')
 
   try {
-    const data = await $fetch<{ url: string }>(`${apiUrl}/upload`, {
+    const { $api } = useNuxtApp()
+    const data = await $api<{ url: string }>('/upload', {
       method: 'POST',
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+      body: formData
     })
     currentProduct.value.imageUrl = data.url
   } catch (err) {
@@ -193,6 +195,7 @@ const saveProduct = async () => {
   }
 
   try {
+    const { $api } = useNuxtApp()
     const body = {
       name: currentProduct.value.name,
       description: currentProduct.value.description,
@@ -217,20 +220,14 @@ const saveProduct = async () => {
     }
 
     if (isEditing.value && currentProduct.value.id) {
-      await $fetch(`${apiUrl}/products/${currentProduct.value.id}`, {
+      await $api(`/products/${currentProduct.value.id}`, {
         method: 'PATCH',
-        body,
-        headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+        body
       })
     } else {
-      await $fetch(`${apiUrl}/products`, {
+      await $api('/products', {
         method: 'POST',
-        body,
-        headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+        body
       })
     }
     isModalOpen.value = false
@@ -251,11 +248,9 @@ const confirmDelete = async () => {
   
   isDeleting.value = true
   try {
-    await $fetch(`${apiUrl}/products/${productToDelete.value}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+    const { $api } = useNuxtApp()
+    await $api(`/products/${productToDelete.value}`, {
+      method: 'DELETE'
     })
     showDeleteConfirm.value = false
     productToDelete.value = null
@@ -596,6 +591,32 @@ onMounted(() => {
                   placeholder="0"
                   class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors"
                 >
+              </div>
+              <div class="space-y-1">
+                <label class="text-sm font-semibold text-gray-600">Terjual</label>
+                <input 
+                  v-model="currentProduct.sold"
+                  type="number"
+                  placeholder="0"
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors"
+                >
+              </div>
+              <div class="space-y-1">
+                <label class="text-sm font-semibold text-gray-600">Rating</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </span>
+                  <input 
+                    v-model="currentProduct.rating"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    placeholder="0.0"
+                    class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                </div>
               </div>
             </div>
           </div>

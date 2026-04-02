@@ -25,8 +25,9 @@ const login = async () => {
 
   try {
     loading.value = true;
+    const { $api } = useNuxtApp()
 
-    const res = await $fetch(`${apiUrl}/auth/login`, {
+    const res = await $api('/auth/login', {
       method: "POST",
       body: {
         email: email.value,
@@ -40,15 +41,22 @@ const login = async () => {
     const tokenCookie = useCookie('token', { maxAge: 60 * 60 * 24 * 7 }) // 1 week
     const roleCookie = useCookie('userRole', { maxAge: 60 * 60 * 24 * 7 })
     const nameCookie = useCookie('userName', { maxAge: 60 * 60 * 24 * 7 })
+    const idCookie = useCookie('userId', { maxAge: 60 * 60 * 24 * 7 })
 
     tokenCookie.value = res?.access_token || "login-token-placeholder"
     roleCookie.value = res?.role || "user"
     nameCookie.value = res?.name || "Akun Saya"
+    idCookie.value = String(res?.id || "")
 
     // Still keep localStorage for legacy/compatibility
     localStorage.setItem("token", res?.access_token || "login-token-placeholder");
     localStorage.setItem("userName", res?.name || "Akun Saya");
     localStorage.setItem("userRole", res?.role || "user");
+    localStorage.setItem("userId", res?.id || "");
+
+    // Initialize cart for this user
+    const cartStore = useCartStore();
+    cartStore.initializeCart(res?.name || "Akun Saya");
 
     // Redirect based on role
     const role = res?.role?.toLowerCase();
@@ -60,6 +68,7 @@ const login = async () => {
       await navigateTo("/");
     }
   } catch (error) {
+    // If $api handles the toast, we just clear loading or show local message
     errorMessage.value =
       error?.data?.message || "Login gagal. Periksa email dan password.";
   } finally {

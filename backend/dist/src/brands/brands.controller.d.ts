@@ -30,6 +30,7 @@ export declare class BrandsController {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
         }[];
     } & {
         id: number;
@@ -59,6 +60,7 @@ export declare class BrandsController {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
         }[];
     } & {
         id: number;

@@ -91,7 +91,10 @@ watch(activeTabId, () => {
             </div>
           </div>
           <div class="product-details">
-            <div class="brand-name">{{ p.brand?.name || 'Merek Umum' }}</div>
+            <div class="brand-info">
+              <img v-if="p.brand?.logoUrl" :src="p.brand.logoUrl" :alt="p.brand.name" class="mini-brand-logo" />
+              <div class="brand-name">{{ p.brand?.name || 'Merek Umum' }}</div>
+            </div>
             <h3 class="product-name">{{ p.name }}</h3>
             <div class="sold-count">Terjual: {{ p.sold || 0 }}</div>
             <div class="product-price">Rp {{ (p.price || 0).toLocaleString('id-ID') }}</div>
@@ -224,6 +227,21 @@ watch(activeTabId, () => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.brand-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.mini-brand-logo {
+  height: 12px;
+  width: auto;
+  max-width: 40px;
+  object-fit: contain;
+  opacity: 0.7;
 }
 
 .brand-name {

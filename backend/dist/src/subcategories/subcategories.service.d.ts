@@ -19,7 +19,7 @@ export declare class SubcategoriesService {
         imageUrl: string | null;
         categoryId: number;
     }>;
-    findAll(): Promise<({
+    findAll(categoryId?: number): Promise<({
         products: {
             id: number;
             name: string;
@@ -40,6 +40,7 @@ export declare class SubcategoriesService {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
         }[];
         category: {
             id: number;
@@ -77,6 +78,7 @@ export declare class SubcategoriesService {
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
+            images: string[];
         }[];
         category: {
             id: number;

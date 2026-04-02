@@ -13,8 +13,14 @@ export class SubcategoriesService {
     });
   }
 
-  async findAll() {
+  async findAll(categoryId?: number) {
+    const where: Prisma.SubcategoryWhereInput = {};
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+    
     return this.prisma.subcategory.findMany({
+      where,
       include: { category: true, products: true },
     });
   }

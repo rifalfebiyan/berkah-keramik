@@ -23,8 +23,13 @@ let SubcategoriesService = class SubcategoriesService {
             include: { category: true },
         });
     }
-    async findAll() {
+    async findAll(categoryId) {
+        const where = {};
+        if (categoryId) {
+            where.categoryId = categoryId;
+        }
         return this.prisma.subcategory.findMany({
+            where,
             include: { category: true, products: true },
         });
     }

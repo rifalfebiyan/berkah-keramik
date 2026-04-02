@@ -57,6 +57,7 @@ model Product {
   flashSaleEndsAt DateTime?    @db.Timestamptz(3)
   size            String?
   color           String?
+  images          String[]     @default([])
   createdAt       DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt       DateTime     @updatedAt @db.Timestamptz(3)
   brand           Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
@@ -64,21 +65,18 @@ model Product {
   subcategory     Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
 }
 
-enum Role {
-  USER
-  ADMIN
-  SUPERADMIN
-}
-
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
   password  String
-  role      Role     @default(USER)
+  phone     String?
+  address   String?
   provider  String   @default("local")
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  role      Role     @default(USER)
+  orders    Order[]
 }
 
 model Order {
@@ -91,6 +89,8 @@ model Order {
   date      String
   createdAt DateTime    @default(now()) @db.Timestamptz(3)
   updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+  userId    Int?
+  user      User?       @relation(fields: [userId], references: [id])
   items     OrderItem[]
 }
 
@@ -102,4 +102,10 @@ model OrderItem {
   quantity     Int
   total        Float
   order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
 }

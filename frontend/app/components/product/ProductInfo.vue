@@ -3,23 +3,14 @@ import { ref } from 'vue'
 import { ShoppingCart, Star } from 'lucide-vue-next'
 
 const props = defineProps<{
-  product: {
-    name: string
-    brand: string
-    price: string
-    oldPrice?: string
-    discount?: string
-    rating: number
-    reviews: string
-    variants: { name: string, image: string }[]
-  }
+  product: any
 }>()
 
-const activeVariant = ref(0)
 const quantity = ref(1)
 
 const updateQuantity = (val: number) => {
   if (val < 1) return
+  if (props.product.stock && val > props.product.stock) return
   quantity.value = val
 }
 
@@ -27,14 +18,18 @@ const cartStore = useCartStore()
 const isAdded = ref(false)
 
 const handleAddToCart = () => {
-  // Parse the price string (e.g. '67.200') to number
-  const priceNum = parseInt(props.product.price.replace(/\D/g, ''), 10) || 0
-  
+  const token = useCookie('token')
+  if (!token.value) {
+    alert('Silakan login terlebih dahulu untuk menambah barang ke keranjang.')
+    navigateTo('/login')
+    return
+  }
+
   cartStore.addToCart({
-    id: props.product.name, // using name as mock ID
+    id: props.product.id,
     name: props.product.name,
-    price: priceNum,
-    image: props.product.variants?.[activeVariant.value]?.image || ''
+    price: props.product.price,
+    image: props.product.imageUrl || ''
   }, quantity.value)
 
   isAdded.value = true
@@ -51,64 +46,51 @@ const handleBuyNow = () => {
   <div class="product-info-panel">
     <!-- Header -->
     <div class="info-header">
-      <div class="star-badge">Star+</div>
       <h1 class="product-title">{{ product.name }}</h1>
+      <div v-if="product.brand" class="brand-tag">{{ product.brand.name }}</div>
     </div>
 
     <!-- Stats -->
     <div class="product-stats">
       <div class="rating">
-        <span class="score">{{ product.rating }}</span>
-        <div class="stars">
-          <Star v-for="i in 5" :key="i" :size="14" :fill="i <= 4 ? 'var(--primary-red)' : 'none'" :color="i <= 4 ? 'var(--primary-red)' : '#ccc'" />
-        </div>
-      </div>
-      <div class="divider">|</div>
-      <div class="reviews-count">
-        <span class="count">{{ product.reviews }}</span> Penilaian
+        <Star v-for="i in 5" :key="i" :size="14" :fill="i <= Math.round(product.rating || 0) ? '#f59e0b' : 'none'" :color="i <= Math.round(product.rating || 0) ? '#f59e0b' : '#ccc'" />
+        <span class="ml-1 text-gray-600">({{ product.rating || 0 }})</span>
       </div>
       <div class="divider">|</div>
       <div class="sold-count">
-        <span class="count">13</span> Terjual
+        <span class="count">{{ product.sold || 0 }}</span> Terjual
       </div>
     </div>
 
     <!-- Pricing -->
     <div class="pricing-card">
-      <div v-if="product.oldPrice" class="old-price">Rp{{ product.oldPrice }}</div>
-      <div class="current-price-row">
-        <span class="price-val">Rp{{ product.price }}</span>
+      <div class="price-row">
+        <span class="price-val">Rp {{ product.price?.toLocaleString() }}</span>
         <span v-if="product.discount" class="discount-badge">{{ product.discount }} OFF</span>
       </div>
+      <div v-if="product.oldPrice" class="old-price">Rp {{ product.oldPrice?.toLocaleString() }}</div>
     </div>
 
     <!-- Details -->
     <div class="selection-section">
-      <!-- Variants -->
-      <div class="selection-row" v-if="product.variants.length > 0">
-        <label>WARNA</label>
-        <div class="variants-grid">
-          <button 
-            v-for="(v, idx) in product.variants" 
-            :key="idx"
-            :class="['variant-btn', { active: activeVariant === idx }]"
-            @click="activeVariant = idx"
-          >
-            <img :src="v.image" :alt="v.name" />
-            <span>{{ v.name }}</span>
-          </button>
-        </div>
+      <div v-if="product.size" class="spec-row">
+        <label>Ukuran:</label>
+        <span>{{ product.size }}</span>
+      </div>
+      <div v-if="product.color" class="spec-row">
+        <label>Warna:</label>
+        <span>{{ product.color }}</span>
       </div>
 
       <!-- Quantity -->
-      <div class="selection-row">
-        <label>KUANTITAS</label>
+      <div class="quantity-row">
+        <label>Kuantitas:</label>
         <div class="qty-selector">
           <button @click="updateQuantity(quantity - 1)">-</button>
           <input type="number" v-model="quantity" />
           <button @click="updateQuantity(quantity + 1)">+</button>
         </div>
-        <span class="stock-info">tersedia baran 13</span>
+        <span class="stock-info">Tersedia {{ product.stock }} buah</span>
       </div>
     </div>
 
@@ -122,11 +104,6 @@ const handleBuyNow = () => {
         Beli Sekarang
       </button>
     </div>
-
-    <!-- Safety Badge -->
-    <div class="safety-badge">
-       <span>🛡️ Bebas Pengembalian • Proteksi Kerusakan + ⌄</span>
-    </div>
   </div>
 </template>
 
@@ -139,25 +116,24 @@ const handleBuyNow = () => {
 
 .info-header {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
-.star-badge {
-  background: var(--primary-red);
-  color: white;
+.brand-tag {
+  display: inline-block;
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 2px 4px;
-  border-radius: 2px;
-  margin-top: 4px;
+  color: #0055aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .product-title {
-  font-size: 1.25rem;
-  font-weight: 500;
-  line-height: 1.4;
-  color: #222;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1a1a1a;
 }
 
 .product-stats {
@@ -170,138 +146,110 @@ const handleBuyNow = () => {
 .rating {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--primary-red);
-  color: var(--primary-red);
+  gap: 2px;
 }
-
-.score {
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.stars { display: flex; gap: 1px; }
-
-.reviews-count, .sold-count {
-  border-bottom: 1px solid #222;
-  color: #757575;
-}
-
-.count { color: #222; font-weight: 500; }
 
 .divider { color: #dbdbdb; }
 
+.count { color: #222; font-weight: 600; }
+
 .pricing-card {
-  background: #fafafa;
-  padding: 1rem;
-  border-radius: 4px;
+  padding: 1rem 0;
 }
 
-.old-price {
-  font-size: 0.875rem;
-  text-decoration: line-through;
-  color: #929292;
-  margin-bottom: 0.25rem;
-}
-
-.current-price-row {
+.price-row {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 .price-val {
-  font-size: 1.875rem;
-  font-weight: 600;
-  color: var(--primary-blue);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ee4d2d;
+}
+
+.old-price {
+  font-size: 1rem;
+  text-decoration: line-through;
+  color: #929292;
+  margin-top: 0.25rem;
 }
 
 .discount-badge {
-  background: var(--primary-red);
+  background: #ff424e;
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 2px 4px;
-  border-radius: 2px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .selection-section {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  margin-top: 1rem;
+  gap: 1rem;
 }
 
-.selection-row {
+.spec-row {
   display: flex;
-  align-items: center;
+  gap: 1rem;
+  font-size: 0.9375rem;
 }
 
-.selection-row label {
-  width: 110px;
-  font-size: 0.875rem;
+.spec-row label {
   color: #757575;
-  text-transform: uppercase;
+  width: 80px;
 }
 
-.variants-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.variant-btn {
+.quantity-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 4px 12px 4px 4px;
-  border: 1px solid rgba(0,0,0,0.09);
-  background: white;
-  font-size: 0.875rem;
-  cursor: pointer;
-  border-radius: 2px;
+  gap: 1rem;
+  margin-top: 0.5rem;
 }
 
-.variant-btn.active {
-  border-color: var(--primary-blue);
-  color: var(--primary-blue);
-}
-
-.variant-btn img {
-  width: 24px;
-  height: 24px;
-  object-fit: cover;
+.quantity-row label {
+  color: #757575;
+  width: 80px;
+  font-size: 0.9375rem;
 }
 
 .qty-selector {
   display: flex;
   align-items: center;
-  border: 1px solid rgba(0,0,0,0.09);
-  border-radius: 2px;
+  border: 1px solid #ddd;
 }
 
 .qty-selector button {
   width: 32px;
   height: 32px;
-  background: #fff;
+  background: #fdfdfd;
   border: none;
   cursor: pointer;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .qty-selector input {
   width: 50px;
   height: 32px;
   text-align: center;
-  border-left: 1px solid rgba(0,0,0,0.09);
-  border-right: 1px solid rgba(0,0,0,0.09);
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
   border-top: none;
   border-bottom: none;
   font-size: 1rem;
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Chrome, Safari, Edge, Opera */
+.qty-selector input::-webkit-outer-spin-button,
+.qty-selector input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .stock-info {
-  margin-left: 1rem;
   font-size: 0.875rem;
   color: #757575;
 }
@@ -315,30 +263,33 @@ const handleBuyNow = () => {
 .btn-primary, .btn-secondary {
   flex: 1;
   height: 48px;
-  border-radius: 2px;
   font-weight: 600;
+  font-size: 0.9375rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  border-radius: 4px;
 }
 
 .btn-secondary {
-  background: rgba(13, 27, 62, 0.05);
-  border: 1px solid var(--primary-blue);
-  color: var(--primary-blue);
+  background: #fff;
+  border: 1px solid #ee4d2d;
+  color: #ee4d2d;
+}
+
+.btn-secondary:hover {
+  background: rgba(238, 77, 45, 0.05);
 }
 
 .btn-primary {
-  background: var(--primary-yellow);
+  background: #ee4d2d;
   border: none;
-  color: var(--primary-blue);
+  color: white;
 }
 
-.safety-badge {
-  font-size: 0.875rem;
-  color: #222;
-  margin-top: 1rem;
+.btn-primary:hover {
+  background: #f05d40;
 }
 </style>

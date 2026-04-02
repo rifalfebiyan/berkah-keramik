@@ -1,30 +1,34 @@
 <template>
-  <div v-if="product">
-    <ProductDetailView
-      :productPreview="product"
-      @back="goBack"
-    />
+  <div class="product-page">
+    <div v-if="pending" class="flex items-center justify-center min-h-[400px]">
+       <div class="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full font-bold"></div>
+    </div>
+    <div v-else-if="error" class="text-center py-20 px-4">
+       <div class="text-red-500 mb-4">Gagal memuat produk.</div>
+       <button @click="refresh" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Coba Lagi</button>
+    </div>
+    <div v-else-if="product">
+      <ProductDetailView
+        :product="product"
+        @back="goBack"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProductDetailView from '~/components/ProductDetailView.vue';
 
 const route = useRoute();
 const router = useRouter();
+const config = useRuntimeConfig();
+const apiUrl = config.public.apiUrl;
 
-// Minimal mock product payload passed to the component,
-// ideally the component fetches detailed info using the ID,
-// but to maintain compatibility we mock the initial pass.
-const product = ref({
-  id: route.params.id,
-  name: 'Product ' + route.params.id
-});
+const { data: product, pending, error, refresh } = await useFetch<any>(`${apiUrl}/products/${route.params.id}`);
 
 const goBack = () => {
-  // Use router history if possible, else go to home
   if (window.history.length > 2) {
     router.back();
   } else {

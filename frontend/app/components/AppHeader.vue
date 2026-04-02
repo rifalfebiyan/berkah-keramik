@@ -48,6 +48,12 @@ const checkLogin = () => {
 
 onMounted(() => {
   checkLogin();
+  
+  // Initialize cart based on logged in user
+  const emailCookie = useCookie('userEmail') // I need to make sure this cookie exists or use userName
+  const nameCookie = useCookie('userName')
+  cartStore.initializeCart(nameCookie.value || null) // Using name as identifier for now if email isn't in cookies
+
   if (typeof window !== "undefined") {
     window.addEventListener('click', closeDropdown);
   }
@@ -82,6 +88,9 @@ const logout = () => {
   localStorage.removeItem("userName");
   localStorage.removeItem("userRole");
   
+  // Switch to guest cart (don't clear the user's specific cart from storage)
+  cartStore.initializeCart(null); 
+
   checkLogin();
   navigateTo("/login");
 };

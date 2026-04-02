@@ -22,8 +22,9 @@ export declare class ProductsController {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
-    findAll(categoryId?: string, subcategoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string): Promise<({
+    findAll(categoryId?: string, subcategoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string, search?: string, sort?: string): Promise<({
         brand: {
             id: number;
             name: string;
@@ -66,6 +67,7 @@ export declare class ProductsController {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     })[]>;
     findOne(id: string): Promise<({
         brand: {
@@ -110,6 +112,7 @@ export declare class ProductsController {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }) | null>;
     update(id: string, updateProductDto: any): Promise<{
         id: number;
@@ -131,6 +134,7 @@ export declare class ProductsController {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
     remove(id: string): Promise<{
         id: number;
@@ -152,5 +156,6 @@ export declare class ProductsController {
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
+        images: string[];
     }>;
 }

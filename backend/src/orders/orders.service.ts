@@ -17,7 +17,7 @@ export class OrdersService {
   }
 
   async create(data: any) {
-    const { customer, phone, address, total, status, date, items } = data;
+    const { userId, customer, phone, address, total, status, date, items } = data;
 
     return this.prisma.$transaction(async (tx) => {
       // 1. Create the order
@@ -29,6 +29,7 @@ export class OrdersService {
           total,
           status,
           date,
+          userId,
           items: {
             create: items.map((item: any) => ({
               productName: item.productName,
@@ -61,6 +62,18 @@ export class OrdersService {
       }
 
       return order;
+    });
+  }
+
+  async findByUserId(userId: number) {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }

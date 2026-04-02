@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('orders')
 export class OrdersController {
@@ -13,5 +14,12 @@ export class OrdersController {
   @Get()
   findAll() {
     return this.ordersService.findAll();
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('my-orders')
+  getMyOrders(@Req() req) {
+    const userId = req.user.id;
+    return this.ordersService.findByUserId(userId);
   }
 }
