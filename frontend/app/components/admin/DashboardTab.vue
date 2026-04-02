@@ -42,8 +42,13 @@ const statCards = computed(() => [
 ])
 
 const lowStockProducts = computed(() =>
-  [...products.value].filter(p => p.stock < 50).sort((a, b) => a.stock - b.stock).slice(0, 5)
+  [...products.value].filter(p => p.stock < 20).sort((a, b) => a.stock - b.stock).slice(0, 5)
 )
+
+const formatName = (str: string) => {
+  if (!str) return ''
+  return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
+}
 </script>
 
 <template>
@@ -93,7 +98,7 @@ const lowStockProducts = computed(() =>
             class="flex items-center justify-between py-3 border-b last:border-0"
           >
             <div>
-              <p class="text-sm font-medium text-gray-900">{{ order.customer }}</p>
+              <p class="text-sm font-medium text-gray-900">{{ formatName(order.customer) }}</p>
               <p class="text-xs text-gray-500">INV-{{ String(order.id).padStart(5, '0') }} · {{ order.date }}</p>
             </div>
             <div class="text-right">
@@ -125,8 +130,8 @@ const lowStockProducts = computed(() =>
             class="flex items-center justify-between"
           >
             <div class="min-w-0">
-              <p class="text-sm text-gray-900 truncate max-w-[140px]">{{ p.name }}</p>
-              <p class="text-xs text-gray-500">{{ p.category }}</p>
+              <p class="text-sm text-gray-900 truncate max-w-[140px]">{{ formatName(p.name) }}</p>
+              <p class="text-xs text-gray-500">{{ p.category?.name || 'Kategori' }}</p>
             </div>
             <span :class="`text-xs px-2 py-1 rounded-full font-medium ${p.stock < 20 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`">
               {{ p.stock }} m²

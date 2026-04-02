@@ -5,7 +5,7 @@
     </div>
     <div v-else-if="error" class="text-center py-20 px-4">
        <div class="text-red-500 mb-4">Gagal memuat produk.</div>
-       <button @click="refresh" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Coba Lagi</button>
+       <button @click="() => refresh()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Coba Lagi</button>
     </div>
     <div v-else-if="product">
       <ProductDetailView
@@ -26,7 +26,7 @@ const router = useRouter();
 const config = useRuntimeConfig();
 const apiUrl = config.public.apiUrl;
 
-const { data: product, pending, error, refresh } = await useFetch<any>(`${apiUrl}/products/${route.params.id}`);
+const { data: product, pending, error, refresh } = await useApiFetch<any>(`/products/${route.params.id}`);
 
 const goBack = () => {
   if (window.history.length > 2) {

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const apiUrl = config.public.apiUrl
-const { data: categories, pending, error } = await useFetch<
-{ id: number; name: string; imageUrl: string | null }[]
->(`${apiUrl}/categories`)
+const { data: categories, pending, error } = await useApiFetch<
+  { id: number; name: string; imageUrl: string | null }[]
+>('/categories')
 
 const emit = defineEmits(['category-selected'])
 

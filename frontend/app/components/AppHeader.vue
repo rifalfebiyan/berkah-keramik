@@ -11,10 +11,13 @@ import {
   ChevronDown,
 } from "lucide-vue-next";
 
-const isLogin = ref(false);
-const userEmail = ref("");
-const userName = ref("");
+const token = useCookie('token')
+const nameCookie = useCookie('userName')
+
+const isLogin = computed(() => !!token.value);
+const userName = computed(() => nameCookie.value || "User");
 const isDropdownOpen = ref(false);
+const { logout: authLogout } = useAuth()
 
 const cartStore = useCartStore();
 const searchQuery = ref("");
@@ -36,23 +39,9 @@ const closeDropdown = (e: MouseEvent) => {
   }
 };
 
-const checkLogin = () => {
-  const token = useCookie('token')
-  const name = useCookie('userName')
-  
-  isLogin.value = !!token.value;
-  if (isLogin.value) {
-    userName.value = name.value || "User";
-  }
-};
-
 onMounted(() => {
-  checkLogin();
-  
   // Initialize cart based on logged in user
-  const emailCookie = useCookie('userEmail') // I need to make sure this cookie exists or use userName
-  const nameCookie = useCookie('userName')
-  cartStore.initializeCart(nameCookie.value || null) // Using name as identifier for now if email isn't in cookies
+  cartStore.initializeCart(nameCookie.value || null)
 
   if (typeof window !== "undefined") {
     window.addEventListener('click', closeDropdown);
@@ -67,7 +56,6 @@ onUnmounted(() => {
 });
 
 const goLogin = () => {
-  checkLogin();
   if (isLogin.value) {
     navigateTo("/admin");
   } else {
@@ -76,23 +64,9 @@ const goLogin = () => {
 };
 
 const logout = () => {
-  const token = useCookie('token')
-  const role = useCookie('userRole')
-  const name = useCookie('userName')
-  
-  token.value = null
-  role.value = null
-  name.value = null
-  
-  localStorage.removeItem("token");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("userRole");
-  
-  // Switch to guest cart (don't clear the user's specific cart from storage)
+  authLogout(null);
+  // Switch to guest cart
   cartStore.initializeCart(null); 
-
-  checkLogin();
-  navigateTo("/login");
 };
 
 const navLinks = [
@@ -213,7 +187,7 @@ const navLinks = [
 
           <div class="action-item cart relative" @click="navigateTo('/cart')">
             <ShoppingBag :size="24" />
-            <span v-if="cartStore.cartCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-[5px] py-[1px] rounded-full">
+            <span v-if="(cartStore.cartCount as any) > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-[5px] py-[1px] rounded-full">
               {{ cartStore.cartCount }}
             </span>
             <div class="action-text">

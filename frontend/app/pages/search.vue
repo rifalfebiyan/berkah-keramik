@@ -21,13 +21,13 @@ const showMobileFilter = ref(false);
 const searchQuery = computed(() => route.query.q as string || '');
 
 // Fetch Metadata for Filters
-const { data: categories } = await useFetch<any[]>(`${apiUrl}/categories`);
-const { data: brandsRaw } = await useFetch<any[]>(`${apiUrl}/brands`);
+const { data: categories } = await useApiFetch<any[]>('/categories');
+const { data: brandsRaw } = await useApiFetch<any[]>('/brands');
 const brands = computed(() => brandsRaw.value?.map(b => b.name.toUpperCase()) || []);
 
 // Main Products Fetch with Filters & Sort
-const { data: products, pending, error } = await useFetch<any[]>(() => {
-  let url = `${apiUrl}/products?search=${encodeURIComponent(searchQuery.value)}&sort=${sortOption.value}`;
+const { data: products, pending, error } = await useApiFetch<any[]>(() => {
+  let url = `/products?search=${encodeURIComponent(searchQuery.value)}&sort=${sortOption.value}`;
   if (selectedCategoryId.value) url += `&categoryId=${selectedCategoryId.value}`;
   url += `&maxPrice=${maxPriceValue.value}`;
   return url;

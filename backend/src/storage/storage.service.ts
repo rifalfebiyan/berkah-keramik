@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import sharp from 'sharp';
+import { extname } from 'path';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -50,11 +52,37 @@ export class StorageService implements OnModuleInit {
     async uploadFile(bucket: string, path: string, file: any) {
         await this.ensureBucket(bucket);
 
+        let uploadBuffer = file.buffer;
+        let uploadPath = path;
+        let uploadMimeType = file.mimetype;
+
+        // Otomatis convert ke WebP jika file adalah gambar (kecuali SVG)
+        if (file.mimetype.startsWith('image/') && !file.mimetype.includes('svg+xml')) {
+            try {
+                uploadBuffer = await sharp(file.buffer)
+                    .webp({ quality: 80 })
+                    .toBuffer();
+
+                uploadMimeType = 'image/webp';
+
+                // Ganti ekstensi file ke .webp
+                const extension = extname(path);
+                if (extension) {
+                    uploadPath = path.substring(0, path.lastIndexOf(extension)) + '.webp';
+                } else {
+                    uploadPath = path + '.webp';
+                }
+            } catch (error) {
+                console.error('Error converting image to WebP:', error);
+                // Fallback ke file asli jika gagal konversi
+            }
+        }
+
         const client = this.supabaseAdmin || this.supabase;
         const { data, error } = await client.storage
             .from(bucket)
-            .upload(path, file.buffer, {
-                contentType: file.mimetype,
+            .upload(uploadPath, uploadBuffer, {
+                contentType: uploadMimeType,
                 upsert: true,
             });
 

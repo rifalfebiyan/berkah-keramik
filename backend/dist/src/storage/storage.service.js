@@ -8,11 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StorageService = void 0;
 const common_1 = require("@nestjs/common");
 const supabase_js_1 = require("@supabase/supabase-js");
 const config_1 = require("@nestjs/config");
+const sharp_1 = __importDefault(require("sharp"));
+const path_1 = require("path");
 let StorageService = class StorageService {
     configService;
     supabase;
@@ -52,11 +57,32 @@ let StorageService = class StorageService {
     }
     async uploadFile(bucket, path, file) {
         await this.ensureBucket(bucket);
+        let uploadBuffer = file.buffer;
+        let uploadPath = path;
+        let uploadMimeType = file.mimetype;
+        if (file.mimetype.startsWith('image/') && !file.mimetype.includes('svg+xml')) {
+            try {
+                uploadBuffer = await (0, sharp_1.default)(file.buffer)
+                    .webp({ quality: 80 })
+                    .toBuffer();
+                uploadMimeType = 'image/webp';
+                const extension = (0, path_1.extname)(path);
+                if (extension) {
+                    uploadPath = path.substring(0, path.lastIndexOf(extension)) + '.webp';
+                }
+                else {
+                    uploadPath = path + '.webp';
+                }
+            }
+            catch (error) {
+                console.error('Error converting image to WebP:', error);
+            }
+        }
         const client = this.supabaseAdmin || this.supabase;
         const { data, error } = await client.storage
             .from(bucket)
-            .upload(path, file.buffer, {
-            contentType: file.mimetype,
+            .upload(uploadPath, uploadBuffer, {
+            contentType: uploadMimeType,
             upsert: true,
         });
         if (error)

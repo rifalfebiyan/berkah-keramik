@@ -4,6 +4,7 @@ import { Toaster } from 'vue-sonner'
 
 <template>
   <Toaster position="top-right" richColors />
+  <SessionAlert />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
