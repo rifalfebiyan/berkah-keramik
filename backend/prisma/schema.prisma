@@ -63,6 +63,7 @@ model Product {
   brand           Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
   category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   subcategory     Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+  favorites       Favorite[]
 }
 
 model User {
@@ -77,6 +78,7 @@ model User {
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
   role      Role     @default(USER)
   orders    Order[]
+  favorites Favorite[]
 }
 
 model Order {
@@ -102,6 +104,17 @@ model OrderItem {
   quantity     Int
   total        Float
   order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
 
 enum Role {

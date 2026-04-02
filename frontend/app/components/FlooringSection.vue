@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { Heart } from 'lucide-vue-next'
 
 const emit = defineEmits(['viewAll'])
 const config = useRuntimeConfig()
 
 const activeTabId = ref<number | null>(null)
+const { toggleFavorite, isFavorited, fetchFavorites } = useFavorites();
+
+// Initial fetch of favorites
+onMounted(() => {
+  fetchFavorites();
+});
 const categories = ref<any[]>([])
 const products = ref<any[]>([])
 const isLoading = ref(true)
@@ -99,6 +106,19 @@ watch(activeTabId, () => {
             <div class="sold-count">Terjual: {{ p.sold || 0 }}</div>
             <div class="product-price">Rp {{ (p.price || 0).toLocaleString('id-ID') }}</div>
           </div>
+
+          <!-- Heart Icon Overlay -->
+          <button 
+            class="favorite-btn"
+            :class="{ 'is-active': isFavorited(p.id) }"
+            @click.stop="toggleFavorite(p)"
+          >
+            <Heart 
+              :size="18" 
+              :fill="isFavorited(p.id) ? '#f87171' : 'none'" 
+              :stroke="isFavorited(p.id) ? '#f87171' : 'currentColor'" 
+            />
+          </button>
         </div>
       </div>
     </div>
@@ -275,6 +295,46 @@ watch(activeTabId, () => {
   font-size: 1rem;
   font-weight: 800;
   color: black;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.flooring-card:hover .favorite-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.favorite-btn:hover {
+  color: #f87171;
+  background: #fef2f2;
+}
+
+.favorite-btn.is-active {
+  opacity: 1;
+  transform: scale(1);
+  color: #f87171;
+}
+
+.favorite-btn:active {
+  transform: scale(1.3);
 }
 
 @media (max-width: 1200px) {

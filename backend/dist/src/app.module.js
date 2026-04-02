@@ -18,6 +18,7 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const storage_module_1 = require("./storage/storage.module");
 const orders_module_1 = require("./orders/orders.module");
 const users_module_1 = require("./users/users.module");
+const favorites_module_1 = require("./favorites/favorites.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -35,7 +36,8 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             storage_module_1.StorageModule,
             orders_module_1.OrdersModule,
-            users_module_1.UsersModule
+            users_module_1.UsersModule,
+            favorites_module_1.FavoritesModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

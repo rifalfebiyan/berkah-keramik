@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { Heart } from 'lucide-vue-next'
 
 const emit = defineEmits(['selectProduct'])
 
@@ -17,6 +18,8 @@ const seconds = () => pad(remaining.value % 60)
 const config = useRuntimeConfig()
 const products = ref<any[]>([])
 const isLoading = ref(true)
+
+const { toggleFavorite, isFavorited, fetchFavorites } = useFavorites();
 
 const isFallback = ref(false)
 
@@ -48,6 +51,8 @@ onMounted(() => {
   timer = setInterval(() => {
     if (remaining.value > 0) remaining.value--
   }, 1000)
+
+  fetchFavorites();
 })
 
 onUnmounted(() => {
@@ -119,6 +124,13 @@ const fmt = (n: number) =>
                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
             <div v-if="!isFallback" class="urgency-overlay">HANYA HARI INI!</div>
+            <button 
+              class="heart-btn"
+              :class="{ 'is-active': isFavorited(p.id) }"
+              @click.stop="toggleFavorite(p)"
+            >
+               <Heart :size="16" :fill="isFavorited(p.id) ? '#ef4444' : 'none'" />
+            </button>
           </div>
 
           <!-- Content Area -->
@@ -328,6 +340,38 @@ const fmt = (n: number) =>
   font-size: 0.65rem;
   font-weight: 800;
   z-index: 2;
+}
+
+.heart-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d1d5db;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.heart-btn.is-active {
+  color: #ef4444;
+}
+
+.heart-btn:hover {
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.heart-btn:active {
+  transform: scale(1.4);
 }
 
 .urgency-overlay {

@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ShoppingCart, Star } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
+import { ShoppingCart, Star, Heart } from 'lucide-vue-next'
+
+const { toggleFavorite, isFavorited, fetchFavorites } = useFavorites();
+
+onMounted(() => {
+  fetchFavorites();
+});
 
 const props = defineProps<{
   product: any
@@ -102,6 +108,13 @@ const handleBuyNow = () => {
       </button>
       <button class="btn-primary" @click="handleBuyNow">
         Beli Sekarang
+      </button>
+      <button 
+        class="btn-favorite" 
+        :class="{ 'is-active': isFavorited(product.id) }" 
+        @click="toggleFavorite(product)"
+      >
+        <Heart :size="20" :fill="isFavorited(product.id) ? '#ee4d2d' : 'none'" />
       </button>
     </div>
   </div>
@@ -291,5 +304,34 @@ const handleBuyNow = () => {
 
 .btn-primary:hover {
   background: #f05d40;
+}
+
+.btn-favorite {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-favorite:hover {
+  border-color: #ee4d2d;
+  color: #ee4d2d;
+  background: rgba(238, 77, 45, 0.05);
+}
+
+.btn-favorite.is-active {
+  color: #ee4d2d;
+  border-color: #ee4d2d;
+}
+
+.btn-favorite:active {
+  transform: scale(1.2);
 }
 </style>
