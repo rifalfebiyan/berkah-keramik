@@ -9,6 +9,7 @@ const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const loading = ref(false);
+const { logout } = useAuth(); // Import logout to use its cleanup logic if needed, or simple reset
 
 const login = async () => {
   errorMessage.value = "";
@@ -37,11 +38,21 @@ const login = async () => {
 
     console.log(res);
 
-    // Save token, name, and role into Cookies so middleware can read them
-    const tokenCookie = useCookie('token', { maxAge: 60 * 60 * 24 * 7 }) // 1 week
-    const roleCookie = useCookie('userRole', { maxAge: 60 * 60 * 24 * 7 })
-    const nameCookie = useCookie('userName', { maxAge: 60 * 60 * 24 * 7 })
-    const idCookie = useCookie('userId', { maxAge: 60 * 60 * 24 * 7 })
+    // Clear existing cookies to avoid duplicates on different paths (important!)
+    const oldToken = useCookie('token')
+    const oldRole = useCookie('userRole')
+    const oldName = useCookie('userName')
+    const oldId = useCookie('userId')
+    oldToken.value = null
+    oldRole.value = null
+    oldName.value = null
+    oldId.value = null
+
+    // Save token, name, and role into Cookies with explicit root path
+    const tokenCookie = useCookie('token', { maxAge: 60 * 60 * 24 * 7, path: '/' }) // 1 week
+    const roleCookie = useCookie('userRole', { maxAge: 60 * 60 * 24 * 7, path: '/' })
+    const nameCookie = useCookie('userName', { maxAge: 60 * 60 * 24 * 7, path: '/' })
+    const idCookie = useCookie('userId', { maxAge: 60 * 60 * 24 * 7, path: '/' })
 
     tokenCookie.value = res?.access_token || "login-token-placeholder"
     roleCookie.value = res?.role || "user"

@@ -26,15 +26,22 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles) {
             return true;
         }
-        const { user } = context.switchToHttp().getRequest();
+        const request = context.switchToHttp().getRequest();
+        const { user } = request;
         if (!user || !user.role) {
+            console.warn('RolesGuard: User not found or role missing in request', {
+                hasUser: !!user,
+                role: user?.role
+            });
             return false;
         }
-        const userRole = user.role.toLowerCase();
-        if (userRole === 'superadmin') {
-            return true;
+        const userRole = String(user.role).toUpperCase();
+        const normalizedRequiredRoles = requiredRoles.map(role => role.toUpperCase());
+        const hasPermission = userRole === 'SUPERADMIN' || normalizedRequiredRoles.includes(userRole);
+        if (!hasPermission) {
+            console.warn(`RolesGuard: Access denied for role [${userRole}]. Required: [${normalizedRequiredRoles.join(', ')}]`);
         }
-        return requiredRoles.map(role => role.toLowerCase()).includes(userRole);
+        return hasPermission;
     }
 };
 exports.RolesGuard = RolesGuard;

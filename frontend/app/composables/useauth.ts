@@ -1,10 +1,10 @@
 import { toast } from 'vue-sonner'
 
 export const useAuth = () => {
-  const token = useCookie('token')
-  const userRole = useCookie('userRole')
-  const userName = useCookie('userName')
-  const userId = useCookie('userId')
+  const token = useCookie('token', { path: '/' })
+  const userRole = useCookie('userRole', { path: '/' })
+  const userName = useCookie('userName', { path: '/' })
+  const userId = useCookie('userId', { path: '/' })
 
   const logout = async (message?: string | null) => {
     const route = useRoute()

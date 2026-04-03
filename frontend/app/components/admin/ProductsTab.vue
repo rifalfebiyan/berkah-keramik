@@ -188,7 +188,21 @@ const openEditModal = (prod: Product) => {
 }
 
 const saveProduct = async () => {
-  if (!currentProduct.value.name) return
+  if (!currentProduct.value.name) {
+    alert('Nama produk harus diisi!')
+    return
+  }
+  
+  if (currentProduct.value.price === undefined || currentProduct.value.price === null) {
+    alert('Harga produk harus diisi!')
+    return
+  }
+
+  if (currentProduct.value.stock === undefined || currentProduct.value.stock === null) {
+    alert('Stok produk harus diisi!')
+    return
+  }
+
   if (!currentProduct.value.brandId || !currentProduct.value.categoryId) {
     alert('Pilih Brand dan Kategori terlebih dahulu.')
     return
@@ -725,7 +739,7 @@ onMounted(() => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span class="text-sm font-medium text-gray-500 group-hover:text-blue-600">Klik untuk upload gambar</span>
-                  <span class="text-xs text-gray-400 mt-1">JPG, PNG • maks 5MB</span>
+                  <span class="text-xs text-gray-400 mt-1">JPG, PNG, WebP • maks 5MB</span>
                 </div>
                 <div v-else class="flex flex-col items-center">
                   <div class="animate-spin w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full mb-3"></div>

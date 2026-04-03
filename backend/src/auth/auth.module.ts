@@ -6,16 +6,21 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { GoogleStrategy } from './google.strategy';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     ConfigModule,
-    JwtModule.register({
-      secret: 'LIFA2802',
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') as any || '1h',
+        },
+      }),
     }),
   ],
   controllers: [AuthController],

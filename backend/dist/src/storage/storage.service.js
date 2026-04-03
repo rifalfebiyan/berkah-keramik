@@ -60,11 +60,9 @@ let StorageService = class StorageService {
         let uploadBuffer = file.buffer;
         let uploadPath = path;
         let uploadMimeType = file.mimetype;
-        if (file.mimetype.startsWith('image/') && !file.mimetype.includes('svg+xml')) {
+        if (file.mimetype.startsWith('image/') && !file.mimetype.includes('svg+xml') && file.mimetype !== 'image/webp') {
             try {
-                uploadBuffer = await (0, sharp_1.default)(file.buffer)
-                    .webp({ quality: 80 })
-                    .toBuffer();
+                uploadBuffer = await (0, sharp_1.default)(file.buffer).webp({ quality: 80 }).toBuffer();
                 uploadMimeType = 'image/webp';
                 const extension = (0, path_1.extname)(path);
                 if (extension) {
@@ -79,17 +77,13 @@ let StorageService = class StorageService {
             }
         }
         const client = this.supabaseAdmin || this.supabase;
-        const { data, error } = await client.storage
-            .from(bucket)
-            .upload(uploadPath, uploadBuffer, {
+        const { data, error } = await client.storage.from(bucket).upload(uploadPath, uploadBuffer, {
             contentType: uploadMimeType,
             upsert: true,
         });
         if (error)
             throw error;
-        const { data: publicUrlData } = client.storage
-            .from(bucket)
-            .getPublicUrl(data.path);
+        const { data: publicUrlData } = client.storage.from(bucket).getPublicUrl(data.path);
         return publicUrlData.publicUrl;
     }
     async deleteFile(bucket, path) {

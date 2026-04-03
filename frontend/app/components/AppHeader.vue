@@ -229,8 +229,13 @@ const navLinks = [
 }
 
 .main-header {
+  position: sticky;
+  top: 0;
   width: 100%;
   background: white;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
 }
 
 /* Top Bar */

@@ -42,13 +42,11 @@ const selectCategory = (id: number) => {
         @click="selectCategory(cat.id)"
       >
 
-        <div
-          class="w-[170px] h-[170px] bg-white rounded-2xl flex items-center justify-center p-4 border shadow-sm transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 group-hover:shadow-lg group-hover:-translate-y-1"
-        >
+        <div class="w-[170px] h-[170px] bg-white rounded-md flex items-center justify-center border shadow-sm transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-blue-100 group-hover:shadow-lg group-hover:-translate-y-1">
           <img
             :src="cat.imageUrl || '/keramik_kategori.png'"
             :alt="cat.name"
-            class="w-full h-auto object-contain"
+            class="w-full h-full object-cover"
           />
         </div>
 
