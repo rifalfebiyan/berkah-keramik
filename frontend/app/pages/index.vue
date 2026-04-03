@@ -3,7 +3,7 @@
     <AppHero />
     <CatalogSection id="promo-section" @selectProduct="handleSelectProduct" />
     <CategorySection id="category-section" @category-selected="handleCategorySelect" />
-    <FlooringSection id="flooring-section" @viewAll="handleViewAllFlooring" />
+    <FlooringSection id="flooring-section" @viewAll="handleViewAllRequested" />
     <BrandSection id="brand-section" @brand-selected="handleBrandSelect" />
     <StoreInfoSection id="info-section" />
   </div>
@@ -33,7 +33,15 @@ const handleCategorySelect = (categoryId: number) => {
   router.push(`/category/${categoryId}`);
 };
 
-const handleViewAllFlooring = () => {
-  router.push(`/flooring`);
+const handleViewAllRequested = (category: any) => {
+  if (category?.name) {
+    const slug = category.name
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-');
+    router.push(`/${slug}`);
+  }
 };
 </script>

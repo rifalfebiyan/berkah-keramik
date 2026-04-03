@@ -27,9 +27,10 @@ const fetchFlashSaleProducts = async () => {
   isLoading.value = true
   isFallback.value = false
   try {
-    const data = await $fetch<any[]>(`${config.public.apiUrl}/products`)
+    const res = await $fetch<any>(`${config.public.apiUrl}/products`)
+    const data = res.data || []
     // Filter by isFlashSale
-    let filtered = data.filter(p => p.isFlashSale)
+    let filtered = data.filter((p: any) => p.isFlashSale)
     
     // Fallback: If no flash sale products, just take the first 5 latest products
     if (filtered.length === 0) {

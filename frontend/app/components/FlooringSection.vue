@@ -16,6 +16,10 @@ const categories = ref<any[]>([])
 const products = ref<any[]>([])
 const isLoading = ref(true)
 
+const activeCategory = computed(() => {
+  return categories.value.find(c => c.id === activeTabId.value)
+})
+
 const fetchCategories = async () => {
   try {
     const data = await $fetch<any[]>(`${config.public.apiUrl}/categories`)
@@ -32,8 +36,14 @@ const fetchProducts = async () => {
   if (!activeTabId.value) return
   isLoading.value = true
   try {
-    const data = await $fetch<any[]>(`${config.public.apiUrl}/products?categoryId=${activeTabId.value}`)
-    products.value = data
+    const res = await $fetch<any>(`${config.public.apiUrl}/products`, {
+      query: {
+        categoryId: activeTabId.value,
+        limit: 12,
+        sort: 'latest'
+      }
+    })
+    products.value = res.data || []
   } catch (err) {
     console.error('Failed to fetch products:', err)
   } finally {
@@ -60,7 +70,13 @@ watch(activeTabId, () => {
         <h2 class="section-title">
           Koleksi Flooring Lengkap: Granit, Vinyl, Keramik & Lainnya! 🧱 🏠
         </h2>
-        <a href="#" class="view-all" @click.prevent="emit('viewAll')">Lihat Semua Flooring</a>
+        <a 
+          href="#" 
+          class="view-all" 
+          @click.prevent="emit('viewAll', activeCategory)"
+        >
+          Lihat Semua {{ activeCategory?.name || 'Produk' }}
+        </a>
       </div>
 
       <div class="tab-navigation">

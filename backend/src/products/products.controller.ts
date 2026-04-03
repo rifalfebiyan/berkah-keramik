@@ -24,6 +24,8 @@ export class ProductsController {
         @Query('maxPrice') maxPrice?: string,
         @Query('search') search?: string,
         @Query('sort') sort?: string,
+        @Query('limit') limit?: string,
+        @Query('page') page?: string,
     ) {
         return this.productsService.findAll({
             categoryId: categoryId ? +categoryId : undefined,
@@ -33,6 +35,8 @@ export class ProductsController {
             maxPrice: maxPrice ? +maxPrice : undefined,
             search,
             sort,
+            limit: limit ? +limit : undefined,
+            page: page ? +page : undefined,
         });
     }
 

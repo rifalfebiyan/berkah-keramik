@@ -31,7 +31,7 @@ let ProductsService = class ProductsService {
         else if (filters?.sort === 'latest') {
             orderBy = { createdAt: 'desc' };
         }
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where: {
                 categoryId: filters?.categoryId,
                 subcategoryId: filters?.subcategoryId,
@@ -47,7 +47,25 @@ let ProductsService = class ProductsService {
             },
             include: { category: true, brand: true, subcategory: true },
             orderBy,
+            take: filters?.limit ? +filters.limit : undefined,
+            skip: (filters?.page && filters?.limit) ? (+filters.page - 1) * +filters.limit : undefined,
         });
+        const total = await this.prisma.product.count({
+            where: {
+                categoryId: filters?.categoryId,
+                subcategoryId: filters?.subcategoryId,
+                brandId: filters?.brandId,
+                price: {
+                    gte: filters?.minPrice,
+                    lte: filters?.maxPrice,
+                },
+                OR: filters?.search ? [
+                    { name: { contains: filters.search, mode: 'insensitive' } },
+                    { description: { contains: filters.search, mode: 'insensitive' } },
+                ] : undefined,
+            },
+        });
+        return { data: products, total };
     }
     async findOne(id) {
         return this.prisma.product.findUnique({

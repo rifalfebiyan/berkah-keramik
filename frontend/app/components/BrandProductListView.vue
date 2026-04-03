@@ -22,7 +22,7 @@ const isLoading = ref(true)
 const fetchBrands = async () => {
   try {
     const data = await $fetch<any[]>(`${apiUrl}/brands`)
-    brandList.value = data.map(b => b.name.toUpperCase())
+    brandList.value = data.map((b: any) => b.name.toUpperCase())
   } catch (err) {
     console.error('Failed to fetch brands:', err)
   }
@@ -31,14 +31,13 @@ const fetchBrands = async () => {
 const fetchProducts = async () => {
   isLoading.value = true
   try {
-    // Fetch all products and filter in frontend to ensure consistent filtering behavior
-    // Alternatively, fetch by brandId if we found the ID
-    const data = await $fetch<any[]>(`${apiUrl}/products`)
+    const res = await $fetch<any>(`${apiUrl}/products`)
+    const data = res.data || []
     products.value = data
     
     // Initial price range update
     if (data.length > 0) {
-      const maxP = Math.max(...data.map(p => p.price))
+      const maxP = Math.max(...data.map((p: any) => p.price))
       activeFilters.value.priceRange[1] = Math.ceil(maxP / 10000) * 10000
     }
   } catch (err) {
@@ -207,6 +206,9 @@ watch(() => props.brand, (newBrand) => {
 .sidebar {
   border-right: 1px solid #f1f5f9;
   padding-right: 1.5rem;
+  position: sticky;
+  top: 255px; /* Offset for AppHeader + ContentHeader */
+  height: fit-content;
 }
 
 .filter-section {
@@ -266,6 +268,12 @@ watch(() => props.brand, (newBrand) => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  position: sticky;
+  top: 195px; /* Offset for AppHeader */
+  background: white;
+  z-index: 30;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f8fafc;
 }
 
 .header-left {
@@ -341,16 +349,27 @@ watch(() => props.brand, (newBrand) => {
 }
 
 .card-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.mitra-logo-box {
-  font-weight: 900;
-  font-size: 1rem;
+.p-brand-logo-img {
+  max-width: 60px;
+  max-height: 20px;
+  object-fit: contain;
+  opacity: 0.8;
 }
 
-.m-red { color: #236d90; }
-.m-blue { color: #f59e0b; }
+.p-brand-logo-text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
 
 .p-image-box {
   aspect-ratio: 1;
@@ -464,6 +483,13 @@ watch(() => props.brand, (newBrand) => {
   height: 20px;
 }
 
+.no-results {
+  text-align: center;
+  padding: 4rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
 @media (max-width: 1024px) {
   .main-layout { grid-template-columns: 1fr; }
   .sidebar { display: none; }
@@ -471,287 +497,5 @@ watch(() => props.brand, (newBrand) => {
 
 @media (max-width: 640px) {
   .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-}
-</style>
-
-<style scoped>
-.brand-list-view {
-  background-color: white;
-  padding: 2rem 0;
-}
-
-.main-layout {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 2rem;
-}
-
-/* Sidebar Styling */
-.sidebar {
-  border-right: 1px solid #f1f5f9;
-  padding-right: 1.5rem;
-}
-
-.filter-section {
-  margin-bottom: 2rem;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 700;
-  font-size: 0.875rem;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  cursor: pointer;
-}
-
-.price-inputs {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.slider {
-  width: 100%;
-  accent-color: var(--primary-blue);
-}
-
-.brand-list {
-  max-height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.brand-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.brand-item input {
-  accent-color: var(--primary-blue);
-}
-
-/* Content Area */
-.content-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.btn-back {
-  background: none;
-  border: 1px solid #e2e8f0;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-back:hover {
-  background: #f8fafc;
-  color: var(--primary-blue);
-  border-color: var(--primary-blue);
-}
-
-.results-count {
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.sort-options {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.sort-dropdown {
-  border: 1px solid #e2e8f0;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  font-weight: 500;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-/* Mitra10 Style Card */
-.mitra10-card {
-  border: 1px solid #f1f5f9;
-  border-radius: 1rem;
-  padding: 1.25rem;
-  position: relative;
-  transition: box-shadow 0.3s;
-}
-
-.mitra10-card:hover {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-}
-
-.card-brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.p-brand-logo-img {
-  max-width: 60px;
-  max-height: 20px;
-  object-fit: contain;
-  opacity: 0.8;
-}
-
-.p-brand-logo-text {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #1e293b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.8;
-}
-
-.p-image-box {
-  aspect-ratio: 1;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.p-image-box img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.p-badges {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.badge-icon {
-  font-size: 1.25rem;
-  opacity: 0.8;
-}
-
-.p-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.price-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.old-price {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  text-decoration: line-through;
-}
-
-.discount-label {
-  background: #ef4444;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 1rem;
-}
-
-.main-price {
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: var(--primary-red);
-}
-
-.p-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0.5rem 0;
-  line-height: 1.4;
-  height: 2.8rem;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.card-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.5rem;
-}
-
-.stars {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.rating-val {
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-left: 4px;
-}
-
-.sold-text {
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.favorite-heart {
-  position: absolute;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  background: none;
-  border: none;
-  color: #cbd5e1;
-  cursor: pointer;
-  padding: 0;
-}
-
-.favorite-heart svg {
-  width: 20px;
-  height: 20px;
 }
 </style>

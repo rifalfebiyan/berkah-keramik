@@ -60,6 +60,12 @@ const isDeleting = ref(false)
 const showDeleteConfirm = ref(false)
 const productToDelete = ref<number | null>(null)
 
+// Pagination State
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const totalProducts = ref(0)
+const totalPages = computed(() => Math.ceil(totalProducts.value / itemsPerPage.value))
+
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchSize = !filterSize.value || (p.size?.toLowerCase().includes(filterSize.value.toLowerCase()))
@@ -106,8 +112,14 @@ const fetchProducts = async () => {
   error.value = null
   try {
     const { $api } = useNuxtApp()
-    const data = await $api<Product[]>('/products')
-    products.value = data
+    const res = await $api<{ data: Product[], total: number }>('/products', {
+      query: {
+        page: currentPage.value,
+        limit: itemsPerPage.value
+      }
+    })
+    products.value = res.data
+    totalProducts.value = res.total
   } catch (err) {
     console.error('Failed to fetch products:', err)
     error.value = 'Gagal memuat produk.'
@@ -115,6 +127,11 @@ const fetchProducts = async () => {
     isLoading.value = false
   }
 }
+
+// Watch for page changes
+watch(currentPage, () => {
+  fetchProducts()
+})
 
 const fetchCategories = async () => {
   try {
@@ -291,7 +308,7 @@ onMounted(() => {
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
         <h2 class="text-2xl font-bold text-gray-800">Manajemen Produk</h2>
-        <p class="text-sm text-gray-400 mt-1">{{ filteredProducts.length }} produk ditemukan</p>
+        <p class="text-sm text-gray-400 mt-1">{{ totalProducts }} produk ditemukan</p>
       </div>
       <button 
         @click="openAddModal"
@@ -377,7 +394,7 @@ onMounted(() => {
               class="hover:bg-blue-50/30 transition-colors"
             >
               <!-- # -->
-              <td class="px-4 py-3 text-gray-400 font-medium text-xs">{{ index + 1 }}</td>
+              <td class="px-4 py-3 text-gray-400 font-medium text-xs">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
 
               <!-- Gambar -->
               <td class="px-4 py-3">
@@ -499,6 +516,53 @@ onMounted(() => {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="!isLoading && totalProducts > 0" class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-gray-500">
+          Showing <span class="font-bold text-gray-800">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to 
+          <span class="font-bold text-gray-800">{{ Math.min(currentPage * itemsPerPage, totalProducts) }}</span> of 
+          <span class="font-bold text-gray-800">{{ totalProducts }}</span> products
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button 
+            @click="currentPage--" 
+            :disabled="currentPage === 1"
+            class="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <div class="flex items-center gap-1">
+            <button 
+              v-for="page in totalPages" 
+              :key="page"
+              @click="currentPage = page"
+              :class="[
+                'w-10 h-10 rounded-lg font-bold text-sm transition-all',
+                currentPage === page 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <button 
+            @click="currentPage++" 
+            :disabled="currentPage === totalPages"
+            class="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 

@@ -3,13 +3,7 @@ export declare class ProductsController {
     private readonly productsService;
     constructor(productsService: ProductsService);
     create(createProductDto: any): Promise<{
-        id: number;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        imageUrl: string | null;
-        categoryId: number;
-        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -17,89 +11,92 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
-        brandId: number;
+        imageUrl: string | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
+        createdAt: Date;
+        updatedAt: Date;
+        id: number;
+        brandId: number;
+        categoryId: number;
+        subcategoryId: number | null;
     }>;
-    findAll(categoryId?: string, subcategoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string, search?: string, sort?: string): Promise<({
-        brand: {
-            id: number;
+    findAll(categoryId?: string, subcategoryId?: string, brandId?: string, minPrice?: string, maxPrice?: string, search?: string, sort?: string, limit?: string, page?: string): Promise<{
+        data: ({
+            brand: {
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                id: number;
+                logoUrl: string | null;
+            };
+            category: {
+                name: string;
+                imageUrl: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                id: number;
+            };
+            subcategory: {
+                name: string;
+                imageUrl: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                id: number;
+                categoryId: number;
+            } | null;
+        } & {
             name: string;
-            createdAt: Date;
-            updatedAt: Date;
-            logoUrl: string | null;
-        };
-        category: {
-            id: number;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
+            description: string | null;
+            price: number;
+            oldPrice: number | null;
+            discount: string | null;
+            stock: number;
+            sold: number;
+            rating: number;
             imageUrl: string | null;
-        };
-        subcategory: {
-            id: number;
-            name: string;
+            isFlashSale: boolean;
+            flashSaleEndsAt: Date | null;
+            size: string | null;
+            color: string | null;
+            images: string[];
             createdAt: Date;
             updatedAt: Date;
-            imageUrl: string | null;
+            id: number;
+            brandId: number;
             categoryId: number;
-        } | null;
-    } & {
-        id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        imageUrl: string | null;
-        categoryId: number;
-        subcategoryId: number | null;
-        description: string | null;
-        price: number;
-        oldPrice: number | null;
-        discount: string | null;
-        stock: number;
-        sold: number;
-        rating: number;
-        brandId: number;
-        isFlashSale: boolean;
-        flashSaleEndsAt: Date | null;
-        size: string | null;
-        color: string | null;
-        images: string[];
-    })[]>;
+            subcategoryId: number | null;
+        })[];
+        total: number;
+    }>;
     findOne(id: string): Promise<({
         brand: {
-            id: number;
             name: string;
             createdAt: Date;
             updatedAt: Date;
+            id: number;
             logoUrl: string | null;
         };
         category: {
-            id: number;
             name: string;
+            imageUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
-            imageUrl: string | null;
+            id: number;
         };
         subcategory: {
-            id: number;
             name: string;
+            imageUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
-            imageUrl: string | null;
+            id: number;
             categoryId: number;
         } | null;
     } & {
-        id: number;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        imageUrl: string | null;
-        categoryId: number;
-        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -107,21 +104,21 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
-        brandId: number;
+        imageUrl: string | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
+        createdAt: Date;
+        updatedAt: Date;
+        id: number;
+        brandId: number;
+        categoryId: number;
+        subcategoryId: number | null;
     }) | null>;
     update(id: string, updateProductDto: any): Promise<{
-        id: number;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        imageUrl: string | null;
-        categoryId: number;
-        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -129,21 +126,21 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
-        brandId: number;
+        imageUrl: string | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
+        createdAt: Date;
+        updatedAt: Date;
+        id: number;
+        brandId: number;
+        categoryId: number;
+        subcategoryId: number | null;
     }>;
     remove(id: string): Promise<{
-        id: number;
         name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        imageUrl: string | null;
-        categoryId: number;
-        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -151,11 +148,17 @@ export declare class ProductsController {
         stock: number;
         sold: number;
         rating: number;
-        brandId: number;
+        imageUrl: string | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
+        createdAt: Date;
+        updatedAt: Date;
+        id: number;
+        brandId: number;
+        categoryId: number;
+        subcategoryId: number | null;
     }>;
 }

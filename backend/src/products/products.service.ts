@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ProductsService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(filters?: { categoryId?: number; subcategoryId?: number; brandId?: number; minPrice?: number; maxPrice?: number; search?: string; sort?: string }) {
+    async findAll(filters?: { categoryId?: number; subcategoryId?: number; brandId?: number; minPrice?: number; maxPrice?: number; search?: string; sort?: string; limit?: number; page?: number }) {
         let orderBy: any = { createdAt: 'desc' }; // Default newest
 
         if (filters?.sort === 'price_asc') {
@@ -18,7 +18,7 @@ export class ProductsService {
             orderBy = { createdAt: 'desc' };
         }
 
-        return this.prisma.product.findMany({
+        const products = await this.prisma.product.findMany({
             where: {
                 categoryId: filters?.categoryId,
                 subcategoryId: filters?.subcategoryId,
@@ -34,7 +34,27 @@ export class ProductsService {
             },
             include: { category: true, brand: true, subcategory: true },
             orderBy,
+            take: filters?.limit ? +filters.limit : undefined,
+            skip: (filters?.page && filters?.limit) ? (+filters.page - 1) * +filters.limit : undefined,
         });
+
+        const total = await this.prisma.product.count({
+            where: {
+                categoryId: filters?.categoryId,
+                subcategoryId: filters?.subcategoryId,
+                brandId: filters?.brandId,
+                price: {
+                    gte: filters?.minPrice,
+                    lte: filters?.maxPrice,
+                },
+                OR: filters?.search ? [
+                    { name: { contains: filters.search, mode: 'insensitive' } },
+                    { description: { contains: filters.search, mode: 'insensitive' } },
+                ] : undefined,
+            },
+        });
+
+        return { data: products, total };
     }
 
     async findOne(id: number) {

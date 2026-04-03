@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ChevronDown, Star, ChevronRight, X } from 'lucide-vue-next'
+
+const props = defineProps<{
+  categoryId: number
+  categoryName: string
+}>()
 
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
@@ -27,7 +32,7 @@ const fetchBrands = async () => {
 const fetchProducts = async () => {
   isLoading.value = true
   try {
-    const res = await $fetch<any>(`${apiUrl}/products?categoryId=1`)
+    const res = await $fetch<any>(`${apiUrl}/products?categoryId=${props.categoryId}`)
     const data = res.data || []
     products.value = data
     
@@ -35,6 +40,8 @@ const fetchProducts = async () => {
     if (data.length > 0) {
       const maxP = Math.max(...data.map(p => p.price))
       activeFilters.value.priceRange[1] = Math.ceil(maxP / 10000) * 10000
+    } else {
+      activeFilters.value.priceRange[1] = 1000000
     }
   } catch (err) {
     console.error('Failed to fetch products:', err)
@@ -53,8 +60,8 @@ const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const brandMatch = activeFilters.value.brands.length === 0 || 
                       activeFilters.value.brands.includes(p.brand?.name?.toUpperCase() || '')
-    const priceMatch = p.price >= activeFilters.value.priceRange[0] && 
-                      p.price <= activeFilters.value.priceRange[1]
+    const priceMatch = p.price >= (activeFilters.value.priceRange[0] || 0) && 
+                      p.price <= (activeFilters.value.priceRange[1] || 1000000)
     return brandMatch && priceMatch
   })
 })
@@ -66,22 +73,27 @@ const formatPrice = (price: number) => {
 onMounted(async () => {
   await Promise.all([fetchBrands(), fetchProducts()])
 })
+
+// Refetch if categoryId changes
+watch(() => props.categoryId, () => {
+  fetchProducts()
+})
 </script>
 
 <template>
-  <div class="brand-list-view">
+  <div class="category-list-view">
     <div class="container main-layout">
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="filter-section">
           <div class="filter-header">
-            <span>Price</span>
+            <span>Harga (IDR)</span>
             <ChevronDown :size="16" />
           </div>
           <div class="filter-content">
              <div class="price-inputs">
-               <div class="range-info">IDR 0</div>
-               <div class="range-info">IDR {{ formatPrice(activeFilters.priceRange[1]) }}</div>
+                <div class="range-info">0</div>
+                <div class="range-info">{{ formatPrice(activeFilters.priceRange[1]) }}</div>
              </div>
              <input 
                type="range" 
@@ -119,7 +131,7 @@ onMounted(async () => {
               <ChevronRight :size="18" style="transform: rotate(180deg)" />
               Kembali
             </button>
-            <div class="results-count">{{ filteredProducts.length }} Produk</div>
+            <div class="results-count">{{ filteredProducts.length }} Produk {{ props.categoryName }}</div>
           </div>
           <div class="sort-options">
             <span>Urutkan dari</span>
@@ -131,7 +143,7 @@ onMounted(async () => {
 
         <div v-if="isLoading" class="py-20 text-center">
           <div class="animate-spin w-8 h-8 border-4 border-gray-200 border-t-primary-blue rounded-full mx-auto mb-4"></div>
-          <p class="text-gray-400 text-sm">Memuat produk flooring...</p>
+          <p class="text-gray-400 text-sm">Memuat produk {{ props.categoryName }}...</p>
         </div>
 
         <div v-else-if="filteredProducts.length === 0" class="no-results">
@@ -166,11 +178,7 @@ onMounted(async () => {
               </div>
             </div>
             
-            <button class="favorite-heart" @click.stop>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-            </button>
+            <NuxtLink :to="`/product/${p.id}`" class="absolute inset-0 z-10" @click.stop></NuxtLink>
           </div>
         </div>
       </main>
@@ -179,7 +187,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.brand-list-view {
+.category-list-view {
   background-color: white;
   padding: 2rem 0;
   min-height: 100vh;
@@ -316,7 +324,7 @@ onMounted(async () => {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
 }
 

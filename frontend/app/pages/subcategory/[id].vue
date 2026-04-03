@@ -91,8 +91,8 @@ const fetchData = async () => {
     subcategory.value = subData;
 
     // 2. Fetch products for this subcategory
-    const prodData = await $fetch(`${config.public.apiUrl}/products?subcategoryId=${subcategoryId.value}`);
-    products.value = prodData;
+    const res = await $fetch<any>(`${config.public.apiUrl}/products?subcategoryId=${subcategoryId.value}`);
+    products.value = res.data || [];
   } catch (err) {
     console.error('Failed to fetch data:', err);
   } finally {

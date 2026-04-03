@@ -26,7 +26,7 @@ let ProductsController = class ProductsController {
     create(createProductDto) {
         return this.productsService.create(createProductDto);
     }
-    findAll(categoryId, subcategoryId, brandId, minPrice, maxPrice, search, sort) {
+    findAll(categoryId, subcategoryId, brandId, minPrice, maxPrice, search, sort, limit, page) {
         return this.productsService.findAll({
             categoryId: categoryId ? +categoryId : undefined,
             subcategoryId: subcategoryId ? +subcategoryId : undefined,
@@ -35,6 +35,8 @@ let ProductsController = class ProductsController {
             maxPrice: maxPrice ? +maxPrice : undefined,
             search,
             sort,
+            limit: limit ? +limit : undefined,
+            page: page ? +page : undefined,
         });
     }
     findOne(id) {
@@ -66,8 +68,10 @@ __decorate([
     __param(4, (0, common_1.Query)('maxPrice')),
     __param(5, (0, common_1.Query)('search')),
     __param(6, (0, common_1.Query)('sort')),
+    __param(7, (0, common_1.Query)('limit')),
+    __param(8, (0, common_1.Query)('page')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findAll", null);
 __decorate([

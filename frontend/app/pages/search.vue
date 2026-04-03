@@ -26,7 +26,7 @@ const { data: brandsRaw } = await useApiFetch<any[]>('/brands');
 const brands = computed(() => brandsRaw.value?.map(b => b.name.toUpperCase()) || []);
 
 // Main Products Fetch with Filters & Sort
-const { data: products, pending, error } = await useApiFetch<any[]>(() => {
+const { data: productsRes, pending, error } = await useApiFetch<any>(() => {
   let url = `/products?search=${encodeURIComponent(searchQuery.value)}&sort=${sortOption.value}`;
   if (selectedCategoryId.value) url += `&categoryId=${selectedCategoryId.value}`;
   url += `&maxPrice=${maxPriceValue.value}`;
@@ -34,6 +34,9 @@ const { data: products, pending, error } = await useApiFetch<any[]>(() => {
 }, {
   watch: [selectedCategoryId, searchQuery, sortOption, maxPriceValue]
 });
+
+const products = computed(() => productsRes.value?.data || []);
+const totalCount = computed(() => productsRes.value?.total || 0);
 
 // Computed for filtering products by brands (Client-side brand filter)
 const filteredProducts = computed(() => {
@@ -79,7 +82,7 @@ const goBack = () => {
             <ChevronLeft :size="18" />
             Kembali
           </button>
-          <div class="results-count">{{ filteredProducts.length }} Produk "{{ searchQuery }}"</div>
+          <div class="results-count">{{ totalCount }} Produk "{{ searchQuery }}"</div>
         </div>
         
         <div class="header-right">
@@ -278,7 +281,7 @@ const goBack = () => {
   border-bottom: 1px solid #f0f0f0;
   padding: 1.25rem 0;
   position: sticky;
-  top: 0;
+  top: 195px; /* Offset for Sticky Header */
   z-index: 40;
 }
 
@@ -392,7 +395,7 @@ const goBack = () => {
   padding-right: 1.5rem;
   height: fit-content;
   position: sticky;
-  top: 100px;
+  top: 255px; /* AppHeader + SearchHeader Offset */
 }
 
 .filter-section {
