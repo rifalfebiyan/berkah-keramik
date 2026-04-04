@@ -24,21 +24,26 @@ export declare class ProductsService {
             category: {
                 id: number;
                 name: string;
-                imageUrl: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                imageUrl: string | null;
             };
             subcategory: {
                 id: number;
                 name: string;
-                imageUrl: string | null;
-                categoryId: number;
                 createdAt: Date;
                 updatedAt: Date;
+                imageUrl: string | null;
+                categoryId: number;
             } | null;
         } & {
             id: number;
             name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            imageUrl: string | null;
+            categoryId: number;
+            subcategoryId: number | null;
             description: string | null;
             price: number;
             oldPrice: number | null;
@@ -46,17 +51,12 @@ export declare class ProductsService {
             stock: number;
             sold: number;
             rating: number;
-            imageUrl: string | null;
             brandId: number;
-            categoryId: number;
-            subcategoryId: number | null;
             isFlashSale: boolean;
             flashSaleEndsAt: Date | null;
             size: string | null;
             color: string | null;
             images: string[];
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         total: number;
     }>;
@@ -71,21 +71,26 @@ export declare class ProductsService {
         category: {
             id: number;
             name: string;
-            imageUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
+            imageUrl: string | null;
         };
         subcategory: {
             id: number;
             name: string;
-            imageUrl: string | null;
-            categoryId: number;
             createdAt: Date;
             updatedAt: Date;
+            imageUrl: string | null;
+            categoryId: number;
         } | null;
     } & {
         id: number;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        imageUrl: string | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -93,21 +98,21 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
-        imageUrl: string | null;
         brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
-        createdAt: Date;
-        updatedAt: Date;
     }) | null>;
     create(data: any): Promise<{
         id: number;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        imageUrl: string | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -115,21 +120,21 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
-        imageUrl: string | null;
         brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: number, data: any): Promise<{
         id: number;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        imageUrl: string | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -137,21 +142,21 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
-        imageUrl: string | null;
         brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     remove(id: number): Promise<{
         id: number;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        imageUrl: string | null;
+        categoryId: number;
+        subcategoryId: number | null;
         description: string | null;
         price: number;
         oldPrice: number | null;
@@ -159,16 +164,11 @@ export declare class ProductsService {
         stock: number;
         sold: number;
         rating: number;
-        imageUrl: string | null;
         brandId: number;
-        categoryId: number;
-        subcategoryId: number | null;
         isFlashSale: boolean;
         flashSaleEndsAt: Date | null;
         size: string | null;
         color: string | null;
         images: string[];
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }
